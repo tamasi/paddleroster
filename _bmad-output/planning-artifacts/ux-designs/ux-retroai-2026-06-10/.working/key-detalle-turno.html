@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>retroai — Detalle de Turno (sheet, mobile)</title>
+<style>
+/*
+  Spine sections illustrated:
+  - Information Architecture: Detalle de Turno (drill-down)
+  - Component Patterns: card-turno (expandido), roster row, status-pill-*, button-action
+  - State Patterns: Roster con confirmaciones pendientes (turno vía bot), Pago Pendiente -> Pagado
+  - Accessibility Floor: status-pill siempre con texto explícito
+  - Key Flow 1 (Marcela registra un pago) — paso 3 a 6 (antes / después de "Registrar pago")
+*/
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+body { background: #E5EAF0; display: flex; gap: 32px; justify-content: center; padding: 32px; flex-wrap: wrap; }
+
+.column { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.caption { font-size: 13px; font-weight: 700; color: #5E7587; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.device {
+  width: 390px;
+  background: rgba(20,36,51,0.4);
+  border-radius: 36px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+  height: 760px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sheet {
+  width: 100%;
+  background: #F0F4F8; /* colors.background */
+  border-radius: 16px 16px 0 0; /* rounded.xl */
+  padding: 16px;
+  max-height: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
+}
+
+.handle { width: 40px; height: 4px; border-radius: 9999px; background: #DCE6EF; margin: 0 auto; }
+
+.court-tag {
+  display: inline-block; background: #0B5FA5; color: #FFFFFF;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  border-radius: 6px; padding: 3px 8px;
+}
+
+.heading-row { display: flex; justify-content: space-between; align-items: flex-start; }
+.card-heading { font-size: 18px; font-weight: 700; color: #142433; }
+.card-meta { font-size: 13px; font-weight: 500; color: #5E7587; margin-top: 2px; }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 9999px; padding: 4px 10px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.pill::before { content: ''; width: 6px; height: 6px; border-radius: 9999px; background: currentColor; }
+.pill-paid { background: #E2F7EC; color: #0E8045; }
+.pill-pending { background: #FFF1DD; color: #B5740A; }
+
+.section-title { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #5E7587; }
+
+.roster { background: #FFFFFF; border: 1px solid #DCE6EF; border-radius: 14px; padding: 4px 16px; }
+.roster-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #DCE6EF; font-size: 15px; color: #142433; }
+.roster-row:last-child { border-bottom: none; }
+.roster-status { font-size: 13px; font-weight: 500; }
+.status-confirmado { color: #0E8045; }
+.status-pendiente { color: #B5740A; }
+
+.amount-row { background: #FFFFFF; border: 1px solid #DCE6EF; border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+.amount-label { font-size: 15px; color: #142433; }
+.amount-value { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: #142433; }
+
+.btn-action {
+  width: 100%; background: #FF8A1E; color: #142433;
+  border: none; border-radius: 10px; padding: 14px 16px;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.btn-action.disabled { background: #DCE6EF; color: #5E7587; cursor: default; }
+
+.confirm-banner {
+  background: #E2F7EC; color: #0E8045; border-radius: 10px; padding: 12px 16px;
+  font-size: 13px; font-weight: 700; text-align: center;
+}
+</style>
+</head>
+<body>
+  <div class="column">
+    <div class="caption">Antes — Pago Pendiente</div>
+    <div class="device">
+      <div class="sheet">
+        <div class="handle"></div>
+        <div>
+          <span class="court-tag">Cancha 6 — Fútbol 5</span>
+          <div class="heading-row" style="margin-top:8px;">
+            <div>
+              <div class="card-heading">Martes — 20:00 a 21:00</div>
+              <div class="card-meta">Reservado por Grupo Martes (turno fijo)</div>
+            </div>
+            <span class="pill pill-pending">Pago Pendiente</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-title" style="margin-bottom:8px;">Roster (8/10 confirmados)</div>
+          <div class="roster">
+            <div class="roster-row"><span>Diego R. (capitán)</span><span class="roster-status status-confirmado">Confirmado</span></div>
+            <div class="roster-row"><span>Lucía F.</span><span class="roster-status status-confirmado">Confirmado</span></div>
+            <div class="roster-row"><span>Martín P.</span><span class="roster-status status-confirmado">Confirmado</span></div>
+            <div class="roster-row"><span>Sofía G.</span><span class="roster-status status-pendiente">Pendiente</span></div>
+            <div class="roster-row"><span>Nicolás A.</span><span class="roster-status status-pendiente">Pendiente</span></div>
+          </div>
+        </div>
+
+        <div class="amount-row">
+          <span class="amount-label">Monto del turno</span>
+          <span class="amount-value">$24.000</span>
+        </div>
+
+        <button class="btn-action">Registrar pago</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="caption">Después — Pagado</div>
+    <div class="device">
+      <div class="sheet">
+        <div class="handle"></div>
+        <div>
+          <span class="court-tag">Cancha 6 — Fútbol 5</span>
+          <div class="heading-row" style="margin-top:8px;">
+            <div>
+              <div class="card-heading">Martes — 20:00 a 21:00</div>
+              <div class="card-meta">Reservado por Grupo Martes (turno fijo)</div>
+            </div>
+            <span class="pill pill-paid">Pagado</span>
+          </div>
+        </div>
+
+        <div class="confirm-banner">Pago registrado</div>
+
+        <div>
+          <div class="section-title" style="margin-bottom:8px;">Roster (8/10 confirmados)</div>
+          <div class="roster">
+            <div class="roster-row"><span>Diego R. (capitán)</span><span class="roster-status status-confirmado">Confirmado</span></div>
+            <div class="roster-row"><span>Lucía F.</span><span class="roster-status status-confirmado">Confirmado</span></div>
+            <div class="roster-row"><span>Martín P.</span><span class="roster-status status-confirmado">Confirmado</span></div>
+            <div class="roster-row"><span>Sofía G.</span><span class="roster-status status-pendiente">Pendiente</span></div>
+            <div class="roster-row"><span>Nicolás A.</span><span class="roster-status status-pendiente">Pendiente</span></div>
+          </div>
+        </div>
+
+        <div class="amount-row">
+          <span class="amount-label">Monto del turno</span>
+          <span class="amount-value">$24.000</span>
+        </div>
+
+        <button class="btn-action disabled">Pagado ✓</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

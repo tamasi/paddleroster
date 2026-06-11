@@ -1,0 +1,76 @@
+# generated: 2026-06-11
+# last_updated: 2026-06-11
+# project: retroai
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: {project-root}/_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-06-11
+last_updated: 2026-06-11
+project: retroai
+project_key: NOKEY
+tracking_system: file-system
+story_location: "{project-root}/_bmad-output/implementation-artifacts"
+
+development_status:
+  epic-1: in-progress
+  1-1-inicializacion-del-proyecto: review
+  1-2-login-multi-usuario: backlog
+  1-3-roles-y-control-de-acceso-dueno-empleado: backlog
+  1-4-invitacion-de-empleados: backlog
+  1-5-configuracion-del-complejo-y-canchas: backlog
+  1-6-modo-claro-oscuro-global: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-calendario-de-turnos-por-cancha-horario: backlog
+  2-2-creacion-manual-de-turno: backlog
+  2-3-cancelacion-de-turno-desde-el-panel: backlog
+  2-4-turnos-fijos-recurrentes: backlog
+  2-5-inicio-resumen-del-dia: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-visualizacion-del-estado-de-pago: backlog
+  3-2-registro-de-pago: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-reporte-de-ocupacion-por-cancha-y-periodo: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-infraestructura-del-bot-de-whatsapp: backlog
+  5-2-creacion-de-turno-y-roster-inicial-via-bot-fr-1: backlog
+  5-3-confirmacion-individual-de-asistencia-fr-2: backlog
+  5-4-reemplazo-auto-gestionado-de-suplentes-fr-3: backlog
+  epic-5-retrospective: optional

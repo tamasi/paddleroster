@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>retroai — Calendario (mobile, agenda)</title>
+<style>
+/*
+  Spine sections illustrated:
+  - Information Architecture: Calendario (agenda por cancha), Nuevo Turno
+  - Component Patterns: card-turno, court-tag, status-pill-*, "Nuevo Turno" (button-primary flotante)
+  - State Patterns: Cancha libre
+  - Responsive & Platform: vista de agenda vertical mobile (1 cancha visible, swipe entre canchas)
+  - Key Flow 3 (Marcela crea un turno manual por llamada) — paso 2-3, slot vacío de las 18:00
+*/
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+body { background: #E5EAF0; display: flex; justify-content: center; padding: 32px 0; }
+
+.device {
+  width: 390px;
+  background: #F0F4F8;
+  border-radius: 36px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  height: 760px;
+  position: relative;
+}
+
+.app-header {
+  background: #0B5FA5; color: #FFFFFF; padding: 16px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.app-header h1 { font-size: 24px; font-weight: 700; line-height: 1.2; }
+
+.court-switcher {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: #FFFFFF; border-bottom: 1px solid #DCE6EF;
+}
+.court-switcher .arrow { color: #5E7587; font-size: 18px; }
+.court-switcher .current { display: flex; flex-direction: column; align-items: center; }
+.court-switcher .name { font-size: 18px; font-weight: 700; color: #142433; }
+.court-switcher .sport { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #5E7587; margin-top: 2px; }
+.court-switcher .date { font-size: 13px; font-weight: 500; color: #5E7587; padding: 12px 16px 0; background: #FFFFFF; }
+
+.content {
+  flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+}
+
+.slot-time { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #5E7587; margin-bottom: 4px; }
+
+.card-turno { background: #FFFFFF; border: 1px solid #DCE6EF; border-radius: 14px; padding: 16px; }
+.court-tag { display: inline-block; background: #0B5FA5; color: #FFFFFF; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; border-radius: 6px; padding: 3px 8px; margin-bottom: 8px; }
+.card-row { display: flex; justify-content: space-between; align-items: flex-start; }
+.card-heading { font-size: 18px; font-weight: 700; color: #142433; }
+.card-meta { font-size: 13px; font-weight: 500; color: #5E7587; margin-top: 2px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 9999px; padding: 4px 10px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.pill::before { content: ''; width: 6px; height: 6px; border-radius: 9999px; background: currentColor; }
+.pill-paid { background: #E2F7EC; color: #0E8045; }
+.pill-pending { background: #FFF1DD; color: #B5740A; }
+
+.slot-empty {
+  border: 1px dashed #DCE6EF; border-radius: 14px; padding: 16px;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  font-size: 13px; font-weight: 500; color: #5E7587;
+  min-height: 64px;
+}
+.slot-empty.highlight { border-color: #0B5FA5; background: rgba(11,95,165,0.04); color: #0B5FA5; font-weight: 700; }
+
+.fab {
+  position: absolute; bottom: 80px; right: 20px;
+  width: 56px; height: 56px; border-radius: 9999px;
+  background: #0B5FA5; color: #FFFFFF;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 400; line-height: 1;
+  box-shadow: 0 4px 12px rgba(11,95,165,0.35);
+  border: none; cursor: pointer;
+}
+
+.bottom-nav { height: 64px; background: #FFFFFF; border-top: 1px solid #DCE6EF; display: flex; align-items: center; justify-content: space-around; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: #5E7587; }
+.nav-item.active { color: #0B5FA5; }
+.nav-icon { width: 22px; height: 22px; border-radius: 6px; background: currentColor; opacity: 0.85; }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="app-header">
+    <h1>Calendario</h1>
+    <div style="width:32px;height:32px;border-radius:9999px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">M</div>
+  </div>
+  <div class="court-switcher">
+    <span class="arrow">‹</span>
+    <div class="current">
+      <span class="name">Cancha 3</span>
+      <span class="sport">Pádel</span>
+    </div>
+    <span class="arrow">›</span>
+  </div>
+  <div class="date">Mañana, miércoles 12 de junio</div>
+  <div class="content">
+    <div>
+      <div class="slot-time">17:00 — 18:00</div>
+      <div class="card-turno">
+        <div class="court-tag">Cancha 3 — Pádel</div>
+        <div class="card-row">
+          <div>
+            <div class="card-heading">17:00 — 18:00</div>
+            <div class="card-meta">Reservado por Carla M.</div>
+          </div>
+          <span class="pill pill-pending">Pago Pendiente</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="slot-time">18:00 — 19:00</div>
+      <div class="slot-empty highlight">Cancha libre — tocá para crear un turno</div>
+    </div>
+
+    <div>
+      <div class="slot-time">19:00 — 20:00</div>
+      <div class="card-turno">
+        <div class="court-tag">Cancha 3 — Pádel</div>
+        <div class="card-row">
+          <div>
+            <div class="card-heading">19:00 — 20:00</div>
+            <div class="card-meta">Reservado por Diego R.</div>
+          </div>
+          <span class="pill pill-paid">Pagado</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="slot-time">20:00 — 21:00</div>
+      <div class="slot-empty">Cancha libre — tocá para crear un turno</div>
+    </div>
+  </div>
+  <button class="fab" title="Nuevo Turno">+</button>
+  <div class="bottom-nav">
+    <div class="nav-item"><div class="nav-icon"></div>Inicio</div>
+    <div class="nav-item active"><div class="nav-icon"></div>Calendario</div>
+    <div class="nav-item"><div class="nav-icon"></div>Pagos</div>
+    <div class="nav-item"><div class="nav-icon"></div>Reportes</div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>retroai — Reportes (notebook)</title>
+<style>
+/*
+  Spine sections illustrated:
+  - Information Architecture: Reportes (solo dueño), navegación notebook (barra lateral)
+  - Component Patterns: occupancy-bar (varias visibles a la vez), bottom-nav -> sidebar
+  - Responsive & Platform: Reportes en notebook muestra varias barras simultáneas (comparación cancha vs cancha)
+  - Key Flow 2 (Hernan revisa Reportes de Ocupación) — paso 2-3, detecta baja ocupación miércoles 14hs
+*/
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+body { background: #E5EAF0; display: flex; justify-content: center; padding: 32px; }
+
+.browser {
+  width: 1100px; background: #F0F4F8; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+}
+.browser-bar { background: #DCE6EF; padding: 8px 16px; display: flex; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 9999px; background: #B8C6D4; }
+
+.app { display: flex; min-height: 640px; }
+
+.sidebar {
+  width: 220px; background: #0B5FA5; color: #FFFFFF; padding: 24px 0; display: flex; flex-direction: column; gap: 4px;
+}
+.sidebar .brand { font-size: 18px; font-weight: 700; padding: 0 24px 24px; }
+.sidebar .item { padding: 12px 24px; font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.7); }
+.sidebar .item.active { color: #FFFFFF; font-weight: 700; background: rgba(255,255,255,0.08); border-right: 3px solid #FF8A1E; }
+
+.main { flex: 1; padding: 32px; }
+.main h1 { font-size: 24px; font-weight: 700; color: #142433; margin-bottom: 24px; }
+
+.filters { display: flex; gap: 12px; margin-bottom: 24px; }
+.filter-pill { border: 1px solid #DCE6EF; background: #FFFFFF; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 500; color: #5E7587; }
+.filter-pill.active { border-color: #0B5FA5; color: #0B5FA5; font-weight: 700; }
+
+.report-card { background: #FFFFFF; border: 1px solid #DCE6EF; border-radius: 14px; padding: 24px; margin-bottom: 16px; }
+.report-card h2 { font-size: 18px; font-weight: 700; color: #142433; margin-bottom: 16px; }
+
+.occ-row { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+.occ-row:last-child { margin-bottom: 0; }
+.occ-label { width: 160px; font-size: 13px; font-weight: 500; color: #142433; }
+.occ-track { flex: 1; height: 10px; border-radius: 9999px; background: rgba(0,0,0,0.06); overflow: hidden; display: flex; }
+.occ-fill-paid { background: #12A150; height: 100%; }
+.occ-fill-partial { background: #F2A900; height: 100%; }
+.occ-fill-pending { background: #FF8A1E; height: 100%; }
+.occ-fill-empty { background: transparent; height: 100%; }
+.occ-pct { width: 50px; text-align: right; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: #142433; }
+.occ-pct.low { color: #E5483D; }
+
+.callout { background: #FFF1DD; color: #B5740A; border-radius: 10px; padding: 12px 16px; font-size: 13px; font-weight: 700; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="browser">
+  <div class="browser-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  <div class="app">
+    <div class="sidebar">
+      <div class="brand">retroai</div>
+      <div class="item">Inicio</div>
+      <div class="item">Calendario</div>
+      <div class="item">Pagos</div>
+      <div class="item active">Reportes</div>
+    </div>
+    <div class="main">
+      <h1>Reportes</h1>
+      <div class="filters">
+        <div class="filter-pill active">Esta semana</div>
+        <div class="filter-pill">Este mes</div>
+        <div class="filter-pill">Pádel</div>
+        <div class="filter-pill">Fútbol 5</div>
+      </div>
+
+      <div class="report-card">
+        <h2>Ocupación por cancha — Miércoles</h2>
+        <div class="occ-row">
+          <div class="occ-label">Cancha 1 — Pádel</div>
+          <div class="occ-track"><div class="occ-fill-paid" style="width: 90%"></div></div>
+          <div class="occ-pct">90%</div>
+        </div>
+        <div class="occ-row">
+          <div class="occ-label">Cancha 2 — Pádel</div>
+          <div class="occ-track"><div class="occ-fill-partial" style="width: 70%"></div></div>
+          <div class="occ-pct">70%</div>
+        </div>
+        <div class="occ-row">
+          <div class="occ-label">Cancha 6 — Fútbol 5 (14:00)</div>
+          <div class="occ-track"><div class="occ-fill-empty" style="width: 0%"></div></div>
+          <div class="occ-pct low">0%</div>
+        </div>
+        <div class="occ-row">
+          <div class="occ-label">Cancha 7 — Fútbol 5 (14:00)</div>
+          <div class="occ-track"><div class="occ-fill-empty" style="width: 0%"></div></div>
+          <div class="occ-pct low">0%</div>
+        </div>
+        <div class="callout">Las canchas de fútbol 5 a las 14:00 vienen en 0% hace 4 semanas.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetroAI — Exploración de Paletas de Color</title>
+<style>
+/* ============================================================
+   RETROAI — PANEL DE ADMINISTRADOR
+   Exploración de 6 paletas / registros emocionales
+   ============================================================ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #eef0f2;
+  color: #1a1a1a;
+  padding: 24px;
+  line-height: 1.4;
+}
+
+.intro {
+  max-width: 1100px;
+  margin: 0 auto 32px;
+}
+.intro h1 { font-size: 26px; margin-bottom: 8px; }
+.intro p { color: #555; font-size: 14px; max-width: 720px; }
+
+.theme-block {
+  max-width: 1100px;
+  margin: 0 auto 48px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+}
+
+.theme-header {
+  padding: 20px 24px;
+}
+.theme-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.theme-header p {
+  font-size: 13px;
+  opacity: 0.85;
+  max-width: 640px;
+}
+
+.theme-body {
+  padding: 24px;
+}
+
+/* Token chip row */
+.tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.token-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+.token-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.12);
+  flex-shrink: 0;
+}
+.token-label { display: flex; flex-direction: column; line-height: 1.15; }
+.token-name { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.65; }
+.token-hex { font-size: 11.5px; font-family: "SF Mono", "Cascadia Code", Consolas, monospace; }
+
+/* Demo layout: card + summary side by side */
+.demo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 760px) {
+  .demo-grid { grid-template-columns: 1fr; }
+}
+
+/* Turno card */
+.turno-card {
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid;
+}
+.turno-card .court-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+.turno-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.turno-card .meta {
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+.turno-card .players {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  margin-bottom: 16px;
+}
+.status-pill::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.action-btn {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Occupancy summary */
+.summary-card {
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid;
+}
+.summary-card h4 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  margin-bottom: 14px;
+  opacity: 0.7;
+}
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.bar-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.06);
+}
+.bar-fill { height: 100%; border-radius: 999px; }
+.bar-label { width: 78px; flex-shrink: 0; }
+.bar-value { width: 40px; text-align: right; flex-shrink: 0; }
+
+.badge-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+
+/* Dark/light side-by-side */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+@media (max-width: 760px) {
+  .split { grid-template-columns: 1fr; }
+}
+.split > div { padding: 24px; }
+
+/* ============================================================
+   THEME 1 — "Cancha & Energía"
+   Verde césped + naranja/lima energético
+   bg:    #F4F7F3
+   surface: #FFFFFF
+   primary: #1B5E3A   (verde césped profundo)
+   accent:  #FF6A2B   (naranja energía / pelota)
+   success: #2E9E4F
+   warning: #F5B400
+   danger:  #E0473C
+   text-primary: #16241C
+   text-secondary: #5C7268
+   border: #DCE6E0
+   ============================================================ */
+.t1-header { background: #1B5E3A; color: #F4F7F3; }
+.t1-body { background: #F4F7F3; }
+.t1-card { background: #FFFFFF; border-color: #DCE6E0; }
+.t1-tag { background: #1B5E3A; color: #fff; }
+.t1-h3 { color: #16241C; }
+.t1-meta { color: #5C7268; }
+.t1-players { color: #16241C; }
+.t1-pending { background: #FDF1D9; color: #B17900; }
+.t1-btn { background: #FF6A2B; color: #fff; }
+.t1-bar1 { background: #2E9E4F; }
+.t1-bar2 { background: #F5B400; }
+.t1-bar3 { background: #FF6A2B; }
+.t1-badge1 { background: #E5F6E9; color: #1F7A39; }
+.t1-badge2 { background: #FDF1D9; color: #B17900; }
+.t1-badge3 { background: #FFE7DC; color: #C44721; }
+
+/* ============================================================
+   THEME 2 — "Pádel Pro" (azul deportivo + naranja)
+   bg:    #F0F4F8
+   surface: #FFFFFF
+   primary: #0B5FA5   (azul cancha de pádel)
+   accent:  #FF8A1E   (naranja pelota pádel)
+   success: #12A150
+   warning: #F2A900
+   danger:  #E5483D
+   text-primary: #142433
+   text-secondary: #5E7587
+   border: #DCE6EF
+   ============================================================ */
+.t2-header { background: #0B5FA5; color: #EAF3FB; }
+.t2-body { background: #F0F4F8; }
+.t2-card { background: #FFFFFF; border-color: #DCE6EF; }
+.t2-tag { background: #0B5FA5; color: #fff; }
+.t2-h3 { color: #142433; }
+.t2-meta { color: #5E7587; }
+.t2-players { color: #142433; }
+.t2-pending { background: #FFF1DD; color: #B5740A; }
+.t2-btn { background: #FF8A1E; color: #fff; }
+.t2-bar1 { background: #12A150; }
+.t2-bar2 { background: #F2A900; }
+.t2-bar3 { background: #FF8A1E; }
+.t2-badge1 { background: #E2F7EC; color: #0E8045; }
+.t2-badge2 { background: #FFF1DD; color: #B5740A; }
+.t2-badge3 { background: #FFE6DD; color: #C2461C; }
+
+/* ============================================================
+   THEME 3 — "Marcador" (Scoreboard oscuro)
+   bg:    #0E1416
+   surface: #16201F  (con variante #1C2A29)
+   primary: #00C2A8   (verde-cian marcador LED)
+   accent:  #FFC400   (amarillo marcador / amonestación)
+   success: #2BD673
+   warning: #FFC400
+   danger:  #FF5252
+   text-primary: #F4FBF9
+   text-secondary: #8FA6A2
+   border: #25332F
+   ============================================================ */
+.t3-header { background: #0E1416; color: #00C2A8; border-bottom: 1px solid #25332F; }
+.t3-body { background: #0E1416; }
+.t3-card { background: #16201F; border-color: #25332F; }
+.t3-tag { background: rgba(0,194,168,0.15); color: #00C2A8; border: 1px solid rgba(0,194,168,0.35); }
+.t3-h3 { color: #F4FBF9; }
+.t3-meta { color: #8FA6A2; }
+.t3-players { color: #F4FBF9; }
+.t3-pending { background: rgba(255,196,0,0.14); color: #FFC400; }
+.t3-btn { background: #00C2A8; color: #0E1416; }
+.t3-bar1 { background: #2BD673; }
+.t3-bar2 { background: #FFC400; }
+.t3-bar3 { background: #FF5252; }
+.t3-badge1 { background: rgba(43,214,115,0.14); color: #2BD673; }
+.t3-badge2 { background: rgba(255,196,0,0.14); color: #FFC400; }
+.t3-badge3 { background: rgba(255,82,82,0.14); color: #FF5252; }
+
+/* ============================================================
+   THEME 4 — "Club de Barrio" (cálido minimalista)
+   bg:    #FAF6F1
+   surface: #FFFFFF
+   primary: #B5481A   (terracota / ladrillo)
+   accent:  #4F8A5B   (verde oliva-césped suave)
+   success: #5C9A66
+   warning: #D9A441
+   danger:  #C0533F
+   text-primary: #2E2620
+   text-secondary: #8A7C70
+   border: #EBE1D6
+   ============================================================ */
+.t4-header { background: #B5481A; color: #FCF3EC; }
+.t4-body { background: #FAF6F1; }
+.t4-card { background: #FFFFFF; border-color: #EBE1D6; }
+.t4-tag { background: #F2DDCC; color: #8A3A12; }
+.t4-h3 { color: #2E2620; }
+.t4-meta { color: #8A7C70; }
+.t4-players { color: #2E2620; }
+.t4-pending { background: #FBEFD9; color: #9A7222; }
+.t4-btn { background: #4F8A5B; color: #fff; }
+.t4-bar1 { background: #5C9A66; }
+.t4-bar2 { background: #D9A441; }
+.t4-bar3 { background: #C0533F; }
+.t4-badge1 { background: #E7F1E8; color: #426B4A; }
+.t4-badge2 { background: #FBEFD9; color: #9A7222; }
+.t4-badge3 { background: #F6E2DC; color: #9C402F; }
+
+/* ============================================================
+   THEME 5 — "Fútbol 5 Night" (oscuro vibrante, energía nocturna)
+   bg:    #121826
+   surface: #1B2436
+   primary: #5B8CFF   (azul cancha sintética bajo luces)
+   accent:  #39E07A   (verde lima energía)
+   success: #39E07A
+   warning: #FFB23E
+   danger:  #FF5C7A
+   text-primary: #F2F5FB
+   text-secondary: #8E9AB8
+   border: #2A3550
+   ============================================================ */
+.t5-header { background: linear-gradient(135deg, #121826 0%, #1B2436 100%); color: #F2F5FB; border-bottom: 1px solid #2A3550; }
+.t5-body { background: #121826; }
+.t5-card { background: #1B2436; border-color: #2A3550; }
+.t5-tag { background: rgba(91,140,255,0.18); color: #8FB0FF; }
+.t5-h3 { color: #F2F5FB; }
+.t5-meta { color: #8E9AB8; }
+.t5-players { color: #F2F5FB; }
+.t5-pending { background: rgba(255,178,62,0.16); color: #FFB23E; }
+.t5-btn { background: #39E07A; color: #0E2317; }
+.t5-bar1 { background: #39E07A; }
+.t5-bar2 { background: #FFB23E; }
+.t5-bar3 { background: #FF5C7A; }
+.t5-badge1 { background: rgba(57,224,122,0.14); color: #39E07A; }
+.t5-badge2 { background: rgba(255,178,62,0.14); color: #FFB23E; }
+.t5-badge3 { background: rgba(255,92,122,0.14); color: #FF5C7A; }
+
+/* ============================================================
+   THEME 6 — "Corporativo Deportivo" (gris/azul marino + acento coral)
+   sobrio, datos financieros en primer plano, toque deportivo discreto
+   bg:    #F5F6F8
+   surface: #FFFFFF
+   primary: #1F2A44   (azul marino corporativo)
+   accent:  #FF5A5F   (coral energético, uso puntual)
+   success: #1FA66B
+   warning: #E8A93E
+   danger:  #E25555
+   text-primary: #1B1F2A
+   text-secondary: #6B7280
+   border: #E4E7EC
+
+   --- DARK VARIANT ---
+   bg:    #14161D
+   surface: #1E212B
+   primary: #6E8BFF
+   accent:  #FF7A7E
+   success: #34C98A
+   warning: #F0BB5E
+   danger:  #F26E6E
+   text-primary: #EDEEF2
+   text-secondary: #969BAB
+   border: #2C3040
+   ============================================================ */
+.t6-header { background: #1F2A44; color: #F5F6F8; }
+.t6-body-light { background: #F5F6F8; }
+.t6-body-dark { background: #14161D; }
+
+.t6-card-light { background: #FFFFFF; border-color: #E4E7EC; }
+.t6-tag-light { background: #E9ECF5; color: #1F2A44; }
+.t6-h3-light { color: #1B1F2A; }
+.t6-meta-light { color: #6B7280; }
+.t6-players-light { color: #1B1F2A; }
+.t6-pending-light { background: #FCF1DD; color: #A6750F; }
+.t6-btn-light { background: #FF5A5F; color: #fff; }
+.t6-bar1-light { background: #1FA66B; }
+.t6-bar2-light { background: #E8A93E; }
+.t6-bar3-light { background: #E25555; }
+.t6-badge1-light { background: #E2F5EC; color: #15814F; }
+.t6-badge2-light { background: #FCF1DD; color: #A6750F; }
+.t6-badge3-light { background: #FBE5E5; color: #B23A3A; }
+
+.t6-card-dark { background: #1E212B; border-color: #2C3040; }
+.t6-tag-dark { background: rgba(110,139,255,0.16); color: #6E8BFF; }
+.t6-h3-dark { color: #EDEEF2; }
+.t6-meta-dark { color: #969BAB; }
+.t6-players-dark { color: #EDEEF2; }
+.t6-pending-dark { background: rgba(240,187,94,0.16); color: #F0BB5E; }
+.t6-btn-dark { background: #FF7A7E; color: #1A0F10; }
+.t6-bar1-dark { background: #34C98A; }
+.t6-bar2-dark { background: #F0BB5E; }
+.t6-bar3-dark { background: #F26E6E; }
+.t6-badge1-dark { background: rgba(52,201,138,0.16); color: #34C98A; }
+.t6-badge2-dark { background: rgba(240,187,94,0.16); color: #F0BB5E; }
+.t6-badge3-dark { background: rgba(242,110,110,0.16); color: #F26E6E; }
+
+footer.note {
+  max-width: 1100px;
+  margin: 0 auto;
+  font-size: 12px;
+  color: #888;
+  padding: 24px 0;
+}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>RetroAI — Panel de Administrador</h1>
+  <p>Exploración de paletas de color para la interfaz de gestión de turnos y pagos del complejo deportivo (5 canchas de pádel + 2 de fútbol 5). Cada variación propone un registro emocional distinto, manteniendo legibilidad para datos financieros (estados de pago, ocupación) en formato mobile-first.</p>
+</div>
+
+<!-- ===================================================================
+     THEME 1 — CANCHA & ENERGÍA
+     =================================================================== -->
+<div class="theme-block">
+  <div class="theme-header t1-header">
+    <h2>1. Cancha &amp; Energía</h2>
+    <p>Verde césped profundo como base de identidad + naranja vibrante como acento de acción. Registro: confiable, "club consolidado", con un golpe de energía deportiva en los CTA.</p>
+  </div>
+  <div class="theme-body t1-body">
+    <div class="tokens">
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#F4F7F3;"></span><span class="token-label"><span class="token-name">background</span><span class="token-hex">#F4F7F3</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#FFFFFF;"></span><span class="token-label"><span class="token-name">surface</span><span class="token-hex">#FFFFFF</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#1B5E3A;"></span><span class="token-label"><span class="token-name">primary</span><span class="token-hex">#1B5E3A</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#FF6A2B;"></span><span class="token-label"><span class="token-name">accent</span><span class="token-hex">#FF6A2B</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#2E9E4F;"></span><span class="token-label"><span class="token-name">success</span><span class="token-hex">#2E9E4F</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#F5B400;"></span><span class="token-label"><span class="token-name">warning/pending</span><span class="token-hex">#F5B400</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#E0473C;"></span><span class="token-label"><span class="token-name">danger</span><span class="token-hex">#E0473C</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#16241C;"></span><span class="token-label"><span class="token-name">text-primary</span><span class="token-hex">#16241C</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#5C7268;"></span><span class="token-label"><span class="token-name">text-secondary</span><span class="token-hex">#5C7268</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#DCE6E0;"></span><span class="token-label"><span class="token-name">border</span><span class="token-hex">#DCE6E0</span></span></div>
+    </div>
+
+    <div class="demo-grid">
+      <div class="turno-card t1-card">
+        <span class="court-tag t1-tag">Cancha 3 — Pádel</span>
+        <h3 class="t1-h3">Martes 20:00 hs</h3>
+        <p class="meta t1-meta">Duración 90 min &middot; Reservado por Lucas G.</p>
+        <p class="players t1-players">4/4 jugadores confirmados</p>
+        <span class="status-pill t1-pending">Pago Pendiente</span>
+        <button class="action-btn t1-btn">Registrar pago</button>
+      </div>
+      <div class="summary-card t1-card">
+        <h4 class="t1-meta">Ocupación de hoy</h4>
+        <div class="bar-row">
+          <span class="bar-label t1-h3">Pagado</span>
+          <div class="bar-track"><div class="bar-fill t1-bar1" style="width:62%;"></div></div>
+          <span class="bar-value t1-h3">62%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t1-h3">Parcial</span>
+          <div class="bar-track"><div class="bar-fill t1-bar2" style="width:18%;"></div></div>
+          <span class="bar-value t1-h3">18%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t1-h3">Pendiente</span>
+          <div class="bar-track"><div class="bar-fill t1-bar3" style="width:20%;"></div></div>
+          <span class="bar-value t1-h3">20%</span>
+        </div>
+        <div class="badge-row">
+          <span class="badge t1-badge1">12 Pagados</span>
+          <span class="badge t1-badge2">3 Parciales</span>
+          <span class="badge t1-badge3">4 Pendientes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================
+     THEME 2 — PÁDEL PRO
+     =================================================================== -->
+<div class="theme-block">
+  <div class="theme-header t2-header">
+    <h2>2. Pádel Pro</h2>
+    <p>Azul intenso de cancha de pádel + naranja de pelota como acento. Registro: técnico, "deporte profesional", moderno y con buen contraste para uso prolongado en pantalla.</p>
+  </div>
+  <div class="theme-body t2-body">
+    <div class="tokens">
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#F0F4F8;"></span><span class="token-label"><span class="token-name">background</span><span class="token-hex">#F0F4F8</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#FFFFFF;"></span><span class="token-label"><span class="token-name">surface</span><span class="token-hex">#FFFFFF</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#0B5FA5;"></span><span class="token-label"><span class="token-name">primary</span><span class="token-hex">#0B5FA5</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#FF8A1E;"></span><span class="token-label"><span class="token-name">accent</span><span class="token-hex">#FF8A1E</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#12A150;"></span><span class="token-label"><span class="token-name">success</span><span class="token-hex">#12A150</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#F2A900;"></span><span class="token-label"><span class="token-name">warning/pending</span><span class="token-hex">#F2A900</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#E5483D;"></span><span class="token-label"><span class="token-name">danger</span><span class="token-hex">#E5483D</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#142433;"></span><span class="token-label"><span class="token-name">text-primary</span><span class="token-hex">#142433</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#5E7587;"></span><span class="token-label"><span class="token-name">text-secondary</span><span class="token-hex">#5E7587</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#DCE6EF;"></span><span class="token-label"><span class="token-name">border</span><span class="token-hex">#DCE6EF</span></span></div>
+    </div>
+
+    <div class="demo-grid">
+      <div class="turno-card t2-card">
+        <span class="court-tag t2-tag">Cancha 3 — Pádel</span>
+        <h3 class="t2-h3">Martes 20:00 hs</h3>
+        <p class="meta t2-meta">Duración 90 min &middot; Reservado por Lucas G.</p>
+        <p class="players t2-players">4/4 jugadores confirmados</p>
+        <span class="status-pill t2-pending">Pago Pendiente</span>
+        <button class="action-btn t2-btn">Registrar pago</button>
+      </div>
+      <div class="summary-card t2-card">
+        <h4 class="t2-meta">Ocupación de hoy</h4>
+        <div class="bar-row">
+          <span class="bar-label t2-h3">Pagado</span>
+          <div class="bar-track"><div class="bar-fill t2-bar1" style="width:62%;"></div></div>
+          <span class="bar-value t2-h3">62%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t2-h3">Parcial</span>
+          <div class="bar-track"><div class="bar-fill t2-bar2" style="width:18%;"></div></div>
+          <span class="bar-value t2-h3">18%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t2-h3">Pendiente</span>
+          <div class="bar-track"><div class="bar-fill t2-bar3" style="width:20%;"></div></div>
+          <span class="bar-value t2-h3">20%</span>
+        </div>
+        <div class="badge-row">
+          <span class="badge t2-badge1">12 Pagados</span>
+          <span class="badge t2-badge2">3 Parciales</span>
+          <span class="badge t2-badge3">4 Pendientes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================
+     THEME 3 — MARCADOR (SCOREBOARD OSCURO)
+     =================================================================== -->
+<div class="theme-block">
+  <div class="theme-header t3-header">
+    <h2>3. Marcador (Scoreboard)</h2>
+    <p>Oscuro tipo tablero electrónico de cancha, con verde-cian estilo LED y amarillo de marcador deportivo. Registro: alto contraste, ideal para mostrador con luz variable, sensación "panel de control en vivo".</p>
+  </div>
+  <div class="theme-body t3-body">
+    <div class="tokens">
+      <div class="token-chip" style="background:#16201F; border-color:#25332F;"><span class="token-swatch" style="background:#0E1416;"></span><span class="token-label"><span class="token-name" style="color:#8FA6A2;">background</span><span class="token-hex" style="color:#F4FBF9;">#0E1416</span></span></div>
+      <div class="token-chip" style="background:#16201F; border-color:#25332F;"><span class="token-swatch" style="background:#16201F;"></span><span class="token-label"><span class="token-name" style="color:#8FA6A2;">surface</span><span class="token-hex" style="color:#F4FBF9;">#16201F</span></span></div>
+      <div class="token-chip" style="background:#16201F; border-color:#25332F;"><span class="token-swatch" style="background:#00C2A8;"></span><span class="token-label"><span class="token-name" style="color:#8FA6A2;">primary</span><span class="token-hex" style="color:#F4FBF9;">#00C2A8</span></span></div>
+      <div class="token-chip" style="background:#16201F; border-color:#25332F;"><span class="token-swatch" style="background:#FFC400;"></span><span class="token-label"><span class="token-name" style="color:#8FA6A2;">accent</span><span class="token-hex" style="color:#F4FBF9;">#FFC400</span></span></div>
+      <div class="token-chip" style="background:#16201F; border-color:#25332F;"><span class="token-swatch" style="background:#2BD673;"></span><span class="token-label"><span class="token-name" style="color:#8FA6A2;">success</span><span class="token-hex" style="color:#F4FBF9;">#2BD673</span></span></div>
+      <div class="token-chip" style="background:#16201F; border-color:#25332F;"><span class="token-swatch" style="background:#FFC400;"></span><span class="token-label"><span class="token-name" style="color:#8FA6A2;">warning/pending</span><span class="token-hex" style="color:#F4FBF9;">#FFC400</span></span></div>
+      <div class="token-chip" style="background:#16201F; border-color:#25332F;"><span class="token-swatch" style="background:#FF5252;"></span><span class="token-label"><span class="token-name" style="color:#8FA6A2;">danger</span><span class="token-hex" style="color:#F4FBF9;">#FF5252</span></span></div>
+      <div class="token-chip" style="background:#16201F; border-color:#25332F;"><span class="token-swatch" style="background:#F4FBF9;"></span><span class="token-label"><span class="token-name" style="color:#8FA6A2;">text-primary</span><span class="token-hex" style="color:#F4FBF9;">#F4FBF9</span></span></div>
+      <div class="token-chip" style="background:#16201F; border-color:#25332F;"><span class="token-swatch" style="background:#8FA6A2;"></span><span class="token-label"><span class="token-name" style="color:#8FA6A2;">text-secondary</span><span class="token-hex" style="color:#F4FBF9;">#8FA6A2</span></span></div>
+      <div class="token-chip" style="background:#16201F; border-color:#25332F;"><span class="token-swatch" style="background:#25332F;"></span><span class="token-label"><span class="token-name" style="color:#8FA6A2;">border</span><span class="token-hex" style="color:#F4FBF9;">#25332F</span></span></div>
+    </div>
+
+    <div class="demo-grid">
+      <div class="turno-card t3-card">
+        <span class="court-tag t3-tag">Cancha 3 — Pádel</span>
+        <h3 class="t3-h3">Martes 20:00 hs</h3>
+        <p class="meta t3-meta">Duración 90 min &middot; Reservado por Lucas G.</p>
+        <p class="players t3-players">4/4 jugadores confirmados</p>
+        <span class="status-pill t3-pending">Pago Pendiente</span>
+        <button class="action-btn t3-btn">Registrar pago</button>
+      </div>
+      <div class="summary-card t3-card">
+        <h4 class="t3-meta">Ocupación de hoy</h4>
+        <div class="bar-row">
+          <span class="bar-label t3-h3">Pagado</span>
+          <div class="bar-track" style="background:rgba(255,255,255,0.06);"><div class="bar-fill t3-bar1" style="width:62%;"></div></div>
+          <span class="bar-value t3-h3">62%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t3-h3">Parcial</span>
+          <div class="bar-track" style="background:rgba(255,255,255,0.06);"><div class="bar-fill t3-bar2" style="width:18%;"></div></div>
+          <span class="bar-value t3-h3">18%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t3-h3">Pendiente</span>
+          <div class="bar-track" style="background:rgba(255,255,255,0.06);"><div class="bar-fill t3-bar3" style="width:20%;"></div></div>
+          <span class="bar-value t3-h3">20%</span>
+        </div>
+        <div class="badge-row">
+          <span class="badge t3-badge1">12 Pagados</span>
+          <span class="badge t3-badge2">3 Parciales</span>
+          <span class="badge t3-badge3">4 Pendientes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================
+     THEME 4 — CLUB DE BARRIO
+     =================================================================== -->
+<div class="theme-block">
+  <div class="theme-header t4-header">
+    <h2>4. Club de Barrio</h2>
+    <p>Cálido y minimalista: terracota tipo ladrillo de canchas + verde oliva suave. Registro: cercano, "club de toda la vida", menos corporativo, más artesanal y amigable.</p>
+  </div>
+  <div class="theme-body t4-body">
+    <div class="tokens">
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#FAF6F1;"></span><span class="token-label"><span class="token-name">background</span><span class="token-hex">#FAF6F1</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#FFFFFF;"></span><span class="token-label"><span class="token-name">surface</span><span class="token-hex">#FFFFFF</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#B5481A;"></span><span class="token-label"><span class="token-name">primary</span><span class="token-hex">#B5481A</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#4F8A5B;"></span><span class="token-label"><span class="token-name">accent</span><span class="token-hex">#4F8A5B</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#5C9A66;"></span><span class="token-label"><span class="token-name">success</span><span class="token-hex">#5C9A66</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#D9A441;"></span><span class="token-label"><span class="token-name">warning/pending</span><span class="token-hex">#D9A441</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#C0533F;"></span><span class="token-label"><span class="token-name">danger</span><span class="token-hex">#C0533F</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#2E2620;"></span><span class="token-label"><span class="token-name">text-primary</span><span class="token-hex">#2E2620</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#8A7C70;"></span><span class="token-label"><span class="token-name">text-secondary</span><span class="token-hex">#8A7C70</span></span></div>
+      <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#EBE1D6;"></span><span class="token-label"><span class="token-name">border</span><span class="token-hex">#EBE1D6</span></span></div>
+    </div>
+
+    <div class="demo-grid">
+      <div class="turno-card t4-card">
+        <span class="court-tag t4-tag">Cancha 3 — Pádel</span>
+        <h3 class="t4-h3">Martes 20:00 hs</h3>
+        <p class="meta t4-meta">Duración 90 min &middot; Reservado por Lucas G.</p>
+        <p class="players t4-players">4/4 jugadores confirmados</p>
+        <span class="status-pill t4-pending">Pago Pendiente</span>
+        <button class="action-btn t4-btn">Registrar pago</button>
+      </div>
+      <div class="summary-card t4-card">
+        <h4 class="t4-meta">Ocupación de hoy</h4>
+        <div class="bar-row">
+          <span class="bar-label t4-h3">Pagado</span>
+          <div class="bar-track"><div class="bar-fill t4-bar1" style="width:62%;"></div></div>
+          <span class="bar-value t4-h3">62%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t4-h3">Parcial</span>
+          <div class="bar-track"><div class="bar-fill t4-bar2" style="width:18%;"></div></div>
+          <span class="bar-value t4-h3">18%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t4-h3">Pendiente</span>
+          <div class="bar-track"><div class="bar-fill t4-bar3" style="width:20%;"></div></div>
+          <span class="bar-value t4-h3">20%</span>
+        </div>
+        <div class="badge-row">
+          <span class="badge t4-badge1">12 Pagados</span>
+          <span class="badge t4-badge2">3 Parciales</span>
+          <span class="badge t4-badge3">4 Pendientes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================
+     THEME 5 — FÚTBOL 5 NIGHT
+     =================================================================== -->
+<div class="theme-block">
+  <div class="theme-header t5-header">
+    <h2>5. Fútbol 5 Night</h2>
+    <p>Oscuro vibrante inspirado en canchas de fútbol 5 bajo luces nocturnas: azul eléctrico + verde lima de alta energía. Registro: dinámico, joven, "noche de partido", máximo contraste para uso nocturno en mostrador.</p>
+  </div>
+  <div class="theme-body t5-body">
+    <div class="tokens">
+      <div class="token-chip" style="background:#1B2436; border-color:#2A3550;"><span class="token-swatch" style="background:#121826;"></span><span class="token-label"><span class="token-name" style="color:#8E9AB8;">background</span><span class="token-hex" style="color:#F2F5FB;">#121826</span></span></div>
+      <div class="token-chip" style="background:#1B2436; border-color:#2A3550;"><span class="token-swatch" style="background:#1B2436;"></span><span class="token-label"><span class="token-name" style="color:#8E9AB8;">surface</span><span class="token-hex" style="color:#F2F5FB;">#1B2436</span></span></div>
+      <div class="token-chip" style="background:#1B2436; border-color:#2A3550;"><span class="token-swatch" style="background:#5B8CFF;"></span><span class="token-label"><span class="token-name" style="color:#8E9AB8;">primary</span><span class="token-hex" style="color:#F2F5FB;">#5B8CFF</span></span></div>
+      <div class="token-chip" style="background:#1B2436; border-color:#2A3550;"><span class="token-swatch" style="background:#39E07A;"></span><span class="token-label"><span class="token-name" style="color:#8E9AB8;">accent</span><span class="token-hex" style="color:#F2F5FB;">#39E07A</span></span></div>
+      <div class="token-chip" style="background:#1B2436; border-color:#2A3550;"><span class="token-swatch" style="background:#39E07A;"></span><span class="token-label"><span class="token-name" style="color:#8E9AB8;">success</span><span class="token-hex" style="color:#F2F5FB;">#39E07A</span></span></div>
+      <div class="token-chip" style="background:#1B2436; border-color:#2A3550;"><span class="token-swatch" style="background:#FFB23E;"></span><span class="token-label"><span class="token-name" style="color:#8E9AB8;">warning/pending</span><span class="token-hex" style="color:#F2F5FB;">#FFB23E</span></span></div>
+      <div class="token-chip" style="background:#1B2436; border-color:#2A3550;"><span class="token-swatch" style="background:#FF5C7A;"></span><span class="token-label"><span class="token-name" style="color:#8E9AB8;">danger</span><span class="token-hex" style="color:#F2F5FB;">#FF5C7A</span></span></div>
+      <div class="token-chip" style="background:#1B2436; border-color:#2A3550;"><span class="token-swatch" style="background:#F2F5FB;"></span><span class="token-label"><span class="token-name" style="color:#8E9AB8;">text-primary</span><span class="token-hex" style="color:#F2F5FB;">#F2F5FB</span></span></div>
+      <div class="token-chip" style="background:#1B2436; border-color:#2A3550;"><span class="token-swatch" style="background:#8E9AB8;"></span><span class="token-label"><span class="token-name" style="color:#8E9AB8;">text-secondary</span><span class="token-hex" style="color:#F2F5FB;">#8E9AB8</span></span></div>
+      <div class="token-chip" style="background:#1B2436; border-color:#2A3550;"><span class="token-swatch" style="background:#2A3550;"></span><span class="token-label"><span class="token-name" style="color:#8E9AB8;">border</span><span class="token-hex" style="color:#F2F5FB;">#2A3550</span></span></div>
+    </div>
+
+    <div class="demo-grid">
+      <div class="turno-card t5-card">
+        <span class="court-tag t5-tag">Cancha 6 — Fútbol 5</span>
+        <h3 class="t5-h3">Martes 20:00 hs</h3>
+        <p class="meta t5-meta">Duración 60 min &middot; Reservado por Lucas G.</p>
+        <p class="players t5-players">10/10 jugadores confirmados</p>
+        <span class="status-pill t5-pending">Pago Pendiente</span>
+        <button class="action-btn t5-btn">Registrar pago</button>
+      </div>
+      <div class="summary-card t5-card">
+        <h4 class="t5-meta">Ocupación de hoy</h4>
+        <div class="bar-row">
+          <span class="bar-label t5-h3">Pagado</span>
+          <div class="bar-track" style="background:rgba(255,255,255,0.06);"><div class="bar-fill t5-bar1" style="width:62%;"></div></div>
+          <span class="bar-value t5-h3">62%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t5-h3">Parcial</span>
+          <div class="bar-track" style="background:rgba(255,255,255,0.06);"><div class="bar-fill t5-bar2" style="width:18%;"></div></div>
+          <span class="bar-value t5-h3">18%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t5-h3">Pendiente</span>
+          <div class="bar-track" style="background:rgba(255,255,255,0.06);"><div class="bar-fill t5-bar3" style="width:20%;"></div></div>
+          <span class="bar-value t5-h3">20%</span>
+        </div>
+        <div class="badge-row">
+          <span class="badge t5-badge1">12 Pagados</span>
+          <span class="badge t5-badge2">3 Parciales</span>
+          <span class="badge t5-badge3">4 Pendientes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================
+     THEME 6 — CORPORATIVO DEPORTIVO (claro / oscuro)
+     =================================================================== -->
+<div class="theme-block">
+  <div class="theme-header t6-header">
+    <h2>6. Corporativo Deportivo</h2>
+    <p>Azul marino sobrio + coral de acento puntual. Registro: el más "herramienta de gestión" de todos — prioriza la lectura de datos financieros, con un toque deportivo discreto en los acentos. Se muestra en modo claro y oscuro.</p>
+  </div>
+
+  <div class="split">
+    <!-- LIGHT -->
+    <div class="t6-body-light">
+      <h4 style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:#6B7280; margin-bottom:14px;">Modo claro</h4>
+      <div class="tokens">
+        <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#F5F6F8;"></span><span class="token-label"><span class="token-name">background</span><span class="token-hex">#F5F6F8</span></span></div>
+        <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#FFFFFF;"></span><span class="token-label"><span class="token-name">surface</span><span class="token-hex">#FFFFFF</span></span></div>
+        <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#1F2A44;"></span><span class="token-label"><span class="token-name">primary</span><span class="token-hex">#1F2A44</span></span></div>
+        <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#FF5A5F;"></span><span class="token-label"><span class="token-name">accent</span><span class="token-hex">#FF5A5F</span></span></div>
+        <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#1FA66B;"></span><span class="token-label"><span class="token-name">success</span><span class="token-hex">#1FA66B</span></span></div>
+        <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#E8A93E;"></span><span class="token-label"><span class="token-name">warning/pending</span><span class="token-hex">#E8A93E</span></span></div>
+        <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#E25555;"></span><span class="token-label"><span class="token-name">danger</span><span class="token-hex">#E25555</span></span></div>
+        <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#1B1F2A;"></span><span class="token-label"><span class="token-name">text-primary</span><span class="token-hex">#1B1F2A</span></span></div>
+        <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#6B7280;"></span><span class="token-label"><span class="token-name">text-secondary</span><span class="token-hex">#6B7280</span></span></div>
+        <div class="token-chip" style="background:#fff;"><span class="token-swatch" style="background:#E4E7EC;"></span><span class="token-label"><span class="token-name">border</span><span class="token-hex">#E4E7EC</span></span></div>
+      </div>
+
+      <div class="turno-card t6-card-light" style="margin-bottom:16px;">
+        <span class="court-tag t6-tag-light">Cancha 3 — Pádel</span>
+        <h3 class="t6-h3-light">Martes 20:00 hs</h3>
+        <p class="meta t6-meta-light">Duración 90 min &middot; Reservado por Lucas G.</p>
+        <p class="players t6-players-light">4/4 jugadores confirmados</p>
+        <span class="status-pill t6-pending-light">Pago Pendiente</span>
+        <button class="action-btn t6-btn-light">Registrar pago</button>
+      </div>
+      <div class="summary-card t6-card-light">
+        <h4 class="t6-meta-light">Ocupación de hoy</h4>
+        <div class="bar-row">
+          <span class="bar-label t6-h3-light">Pagado</span>
+          <div class="bar-track"><div class="bar-fill t6-bar1-light" style="width:62%;"></div></div>
+          <span class="bar-value t6-h3-light">62%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t6-h3-light">Parcial</span>
+          <div class="bar-track"><div class="bar-fill t6-bar2-light" style="width:18%;"></div></div>
+          <span class="bar-value t6-h3-light">18%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t6-h3-light">Pendiente</span>
+          <div class="bar-track"><div class="bar-fill t6-bar3-light" style="width:20%;"></div></div>
+          <span class="bar-value t6-h3-light">20%</span>
+        </div>
+        <div class="badge-row">
+          <span class="badge t6-badge1-light">12 Pagados</span>
+          <span class="badge t6-badge2-light">3 Parciales</span>
+          <span class="badge t6-badge3-light">4 Pendientes</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARK -->
+    <div class="t6-body-dark">
+      <h4 style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:#969BAB; margin-bottom:14px;">Modo oscuro</h4>
+      <div class="tokens">
+        <div class="token-chip" style="background:#1E212B; border-color:#2C3040;"><span class="token-swatch" style="background:#14161D;"></span><span class="token-label"><span class="token-name" style="color:#969BAB;">background</span><span class="token-hex" style="color:#EDEEF2;">#14161D</span></span></div>
+        <div class="token-chip" style="background:#1E212B; border-color:#2C3040;"><span class="token-swatch" style="background:#1E212B;"></span><span class="token-label"><span class="token-name" style="color:#969BAB;">surface</span><span class="token-hex" style="color:#EDEEF2;">#1E212B</span></span></div>
+        <div class="token-chip" style="background:#1E212B; border-color:#2C3040;"><span class="token-swatch" style="background:#6E8BFF;"></span><span class="token-label"><span class="token-name" style="color:#969BAB;">primary</span><span class="token-hex" style="color:#EDEEF2;">#6E8BFF</span></span></div>
+        <div class="token-chip" style="background:#1E212B; border-color:#2C3040;"><span class="token-swatch" style="background:#FF7A7E;"></span><span class="token-label"><span class="token-name" style="color:#969BAB;">accent</span><span class="token-hex" style="color:#EDEEF2;">#FF7A7E</span></span></div>
+        <div class="token-chip" style="background:#1E212B; border-color:#2C3040;"><span class="token-swatch" style="background:#34C98A;"></span><span class="token-label"><span class="token-name" style="color:#969BAB;">success</span><span class="token-hex" style="color:#EDEEF2;">#34C98A</span></span></div>
+        <div class="token-chip" style="background:#1E212B; border-color:#2C3040;"><span class="token-swatch" style="background:#F0BB5E;"></span><span class="token-label"><span class="token-name" style="color:#969BAB;">warning/pending</span><span class="token-hex" style="color:#EDEEF2;">#F0BB5E</span></span></div>
+        <div class="token-chip" style="background:#1E212B; border-color:#2C3040;"><span class="token-swatch" style="background:#F26E6E;"></span><span class="token-label"><span class="token-name" style="color:#969BAB;">danger</span><span class="token-hex" style="color:#EDEEF2;">#F26E6E</span></span></div>
+        <div class="token-chip" style="background:#1E212B; border-color:#2C3040;"><span class="token-swatch" style="background:#EDEEF2;"></span><span class="token-label"><span class="token-name" style="color:#969BAB;">text-primary</span><span class="token-hex" style="color:#EDEEF2;">#EDEEF2</span></span></div>
+        <div class="token-chip" style="background:#1E212B; border-color:#2C3040;"><span class="token-swatch" style="background:#969BAB;"></span><span class="token-label"><span class="token-name" style="color:#969BAB;">text-secondary</span><span class="token-hex" style="color:#EDEEF2;">#969BAB</span></span></div>
+        <div class="token-chip" style="background:#1E212B; border-color:#2C3040;"><span class="token-swatch" style="background:#2C3040;"></span><span class="token-label"><span class="token-name" style="color:#969BAB;">border</span><span class="token-hex" style="color:#EDEEF2;">#2C3040</span></span></div>
+      </div>
+
+      <div class="turno-card t6-card-dark" style="margin-bottom:16px;">
+        <span class="court-tag t6-tag-dark">Cancha 3 — Pádel</span>
+        <h3 class="t6-h3-dark">Martes 20:00 hs</h3>
+        <p class="meta t6-meta-dark">Duración 90 min &middot; Reservado por Lucas G.</p>
+        <p class="players t6-players-dark">4/4 jugadores confirmados</p>
+        <span class="status-pill t6-pending-dark">Pago Pendiente</span>
+        <button class="action-btn t6-btn-dark">Registrar pago</button>
+      </div>
+      <div class="summary-card t6-card-dark">
+        <h4 class="t6-meta-dark">Ocupación de hoy</h4>
+        <div class="bar-row">
+          <span class="bar-label t6-h3-dark">Pagado</span>
+          <div class="bar-track" style="background:rgba(255,255,255,0.06);"><div class="bar-fill t6-bar1-dark" style="width:62%;"></div></div>
+          <span class="bar-value t6-h3-dark">62%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t6-h3-dark">Parcial</span>
+          <div class="bar-track" style="background:rgba(255,255,255,0.06);"><div class="bar-fill t6-bar2-dark" style="width:18%;"></div></div>
+          <span class="bar-value t6-h3-dark">18%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label t6-h3-dark">Pendiente</span>
+          <div class="bar-track" style="background:rgba(255,255,255,0.06);"><div class="bar-fill t6-bar3-dark" style="width:20%;"></div></div>
+          <span class="bar-value t6-h3-dark">20%</span>
+        </div>
+        <div class="badge-row">
+          <span class="badge t6-badge1-dark">12 Pagados</span>
+          <span class="badge t6-badge2-dark">3 Parciales</span>
+          <span class="badge t6-badge3-dark">4 Pendientes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="note">
+  RetroAI &middot; Exploración de paletas &middot; Generado para revisión de dirección visual (sin JS, sin requests externas, fuente del sistema).
+</footer>
+
+</body>
+</html>
