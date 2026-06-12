@@ -1,0 +1,57 @@
+<% content_for :page_title, "Nuevo Turno" %>
+
+<div class="mx-auto md:w-2/3 w-full px-4">
+  <%= link_to "Volver", calendario_path(date: @date), class: "text-blue-600 hover:text-blue-500 font-medium mb-4 inline-block" %>
+
+  <h1 class="font-bold text-3xl mb-2 dark:text-white">Nuevo Turno</h1>
+
+  <div class="mb-8">
+    <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-bold uppercase tracking-wide bg-primary/10 dark:bg-primary-dark/15 text-primary dark:text-primary-dark">
+      <%= @cancha.name %> — <%= humanize_sport(@cancha.sport) %>
+    </span>
+    <p class="text-text-secondary dark:text-text-secondary-dark text-sm mt-2">
+      <%= l(@date, format: "%A %d de %B", locale: :es).capitalize %> — <%= format('%02d:00', @hour) %> a <%= format('%02d:00', @hour + 1) %>
+    </p>
+  </div>
+
+  <% if @turno.errors.any? %>
+    <div class="mb-5 p-4 rounded-md bg-danger/10 dark:bg-danger-dark/10 text-danger dark:text-danger-dark text-sm">
+      <%= @turno.errors.full_messages.to_sentence %>
+    </div>
+  <% end %>
+
+  <%= form_with model: @turno, url: turnos_path do |f| %>
+    <%= hidden_field_tag :cancha_id, @cancha.id %>
+    <%= hidden_field_tag :date, @date %>
+    <%= hidden_field_tag :hour, @hour %>
+
+    <%= render InputFieldComponent.new(
+      label: "Nombre de quien reserva",
+      name: "turno[reservation_name]",
+      value: @turno.reservation_name,
+      error_message: @turno.errors[:reservation_name].first,
+      placeholder: "Ej: Marcela"
+    ) %>
+
+    <div class="mt-6">
+      <h2 class="section-title text-sm font-bold uppercase tracking-wide text-text-secondary dark:text-text-secondary-dark mb-2">
+        Roster (opcional)
+      </h2>
+      <div class="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-lg p-4 space-y-3">
+        <%= f.fields_for :roster_entries do |rf| %>
+          <%= rf.hidden_field :position %>
+          <%= render InputFieldComponent.new(
+            label: "Jugador",
+            name: "turno[roster_entries_attributes][#{rf.index}][name]",
+            value: rf.object.name,
+            placeholder: "Nombre del jugador"
+          ) %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <%= render ButtonPrimaryComponent.new(text: "Crear Turno") %>
+    </div>
+  <% end %>
+</div>

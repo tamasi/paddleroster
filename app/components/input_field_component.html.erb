@@ -1,10 +1,10 @@
 <div class="my-5">
-  <%= label_tag field_id, @label, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" %>
+  <%= label_tag field_id, @label, class: "block text-sm font-medium text-text-secondary dark:text-text-secondary-dark mb-2" %>
 
   <%= tag.input(**field_html_options, type: @type, name: @name, value: (@type == "password" ? nil : @value)) %>
 
   <% if error? %>
-    <p id="<%= error_id %>" class="mt-2 text-sm font-medium text-red-600 dark:text-red-400">
+    <p id="<%= error_id %>" class="mt-2 text-sm font-medium text-danger dark:text-danger-dark">
       <%= @error_message %>
     </p>
   <% end %>

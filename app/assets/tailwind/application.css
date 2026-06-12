@@ -1,1 +1,43 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-background: #F0F4F8;
+  --color-surface: #FFFFFF;
+  --color-primary: #0B5FA5;
+  --color-primary-foreground: #FFFFFF;
+  --color-accent: #FF8A1E;
+  --color-accent-foreground: #142433;
+  --color-success: #12A150;
+  --color-warning: #F2A900;
+  --color-danger: #E5483D;
+  --color-text-primary: #142433;
+  --color-text-secondary: #5E7587;
+  --color-border: #DCE6EF;
+  --color-pending-bg: #FFF1DD;
+  --color-pending-fg: #B5740A;
+  --color-paid-bg: #E2F7EC;
+  --color-paid-fg: #0E8045;
+  --color-partial-bg: #FFF1DD;
+  --color-partial-fg: #B5740A;
+
+  --color-background-dark: #10171F;
+  --color-surface-dark: #1A2530;
+  --color-primary-dark: #5BA3E0;
+  --color-primary-foreground-dark: #0A1620;
+  --color-accent-dark: #FFA64D;
+  --color-accent-foreground-dark: #1A0F00;
+  --color-success-dark: #34C98A;
+  --color-warning-dark: #F0BB5E;
+  --color-danger-dark: #F2746A;
+  --color-text-primary-dark: #EAF2FA;
+  --color-text-secondary-dark: #93A8BD;
+  --color-border-dark: #2A3B4D;
+  --color-pending-bg-dark: rgba(240, 187, 94, 0.16);
+  --color-pending-fg-dark: #F0BB5E;
+  --color-paid-bg-dark: rgba(52, 201, 138, 0.16);
+  --color-paid-fg-dark: #34C98A;
+  --color-partial-bg-dark: rgba(240, 187, 94, 0.16);
+  --color-partial-fg-dark: #F0BB5E;
+}

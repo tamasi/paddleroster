@@ -8,6 +8,13 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "new does not render the app header or bottom nav" do
+    get new_session_path
+
+    assert_select "header", count: 0
+    assert_select "nav", count: 0
+  end
+
   test "create with valid credentials" do
     post session_path, params: { email_address: @user.email_address, password: "password" }
 

@@ -1,0 +1,25 @@
+<%= link_to turno_path(@turno), class: "bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-lg p-4 flex flex-col h-full shadow-sm hover:shadow-md transition-shadow" do %>
+  <div class="flex items-center justify-between mb-2">
+    <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-bold uppercase tracking-wide bg-primary/10 dark:bg-primary-dark/15 text-primary dark:text-primary-dark">
+      <%= @turno.cancha.name %> — <%= humanize_sport(@turno.cancha.sport) %>
+    </span>
+    <span class="text-text-secondary dark:text-text-secondary-dark text-xs">
+      <%= @turno.start_time.strftime("%H:%M") %>
+    </span>
+  </div>
+
+  <div class="flex-grow">
+    <h3 class="text-lg font-bold text-text-primary dark:text-text-primary-dark leading-tight mb-1">
+      <%= reservee_name %>
+    </h3>
+    <p class="text-sm text-text-secondary dark:text-text-secondary-dark font-medium mb-3">
+      <%= roster_summary %>
+    </p>
+  </div>
+
+  <div class="mt-auto flex items-center justify-between border-t border-border dark:border-border-dark pt-3">
+    <%= render StatusPillComponent.new(status: @turno.payment_status) %>
+
+    <%# En futuras historias, si hay botón de acción primario, irá aquí %>
+  </div>
+<% end %>

@@ -42,6 +42,12 @@ so that pueda empezar a construir features sobre una base consistente con la arq
   - [x] Subtask 3.2: Confirmar que existen los directorios base que usarán stories futuras: `app/services/`, `app/policies/`, `app/components/`, `app/javascript/controllers/`, `test/services/` (pueden estar vacíos o con un `.keep`, no es necesario crear archivos de dominio en esta story)
   - [x] Subtask 3.3: Hacer commit inicial con el esqueleto de ambos servicios
 
+### Review Findings
+
+- [x] [Review][Defer] Gemas redundantes en Gemfile — Gemas como `jbuilder` e `image_processing` vienen por defecto en Rails 8 pero no están explícitamente requeridas por la arquitectura del MVP. Se mantienen por ser defaults del framework. [Gemfile:1-30] — deferred, pre-existing
+- [x] [Review][Patch] Dependencias de desarrollo innecesarias en whatsapp-service — El paquete `pg` está listado en `dependencies` pero también sus tipos en `devDependencies`. `tsx` y `typescript` son correctos en dev, pero se podría limpiar el package.json para evitar confusión. [whatsapp-service/package.json:1-20]
+- [x] [Review][Patch] README.md vacío — El archivo README.md generado por Rails está vacío de contenido específico del proyecto. Debería al menos mencionar la existencia del `whatsapp-service`. [README.md:1-20]
+
 ## Dev Notes
 
 - **Esta es la PRIMERA story del proyecto** — no hay código previo, no hay historias anteriores, no hay convenciones de código aún establecidas más allá de las definidas en `architecture.md`. Lo que se decida acá (estructura, nombres) es la base para todo lo demás.

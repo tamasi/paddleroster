@@ -1,0 +1,26 @@
+<% content_for :page_title, "Nueva Cancha" %>
+
+<div class="mx-auto md:w-2/3 w-full px-4">
+  <%= link_to "Volver", configuracion_path, class: "text-blue-600 hover:text-blue-500 font-medium mb-4 inline-block" %>
+
+  <h1 class="font-bold text-3xl mb-8 dark:text-white">Nueva Cancha</h1>
+
+  <%= form_with model: @cancha, url: configuracion_canchas_path do |f| %>
+    <%= render InputFieldComponent.new(
+      label: "Nombre / Identificador",
+      name: "cancha[name]",
+      value: @cancha.name,
+      error_message: @cancha.errors[:name].first,
+      placeholder: "Ej: Cancha 1"
+    ) %>
+
+    <div class="my-5">
+      <%= f.label :sport, "Deporte", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" %>
+      <%= f.select :sport, Cancha.sports.keys.map { |s| [s.humanize, s] }, {}, class: "block w-full rounded-md border border-gray-300 dark:border-gray-700 px-3 py-3 text-base bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" %>
+    </div>
+
+    <div class="mt-8">
+      <%= render ButtonPrimaryComponent.new(text: "Crear Cancha") %>
+    </div>
+  <% end %>
+</div>

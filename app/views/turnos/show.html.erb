@@ -1,0 +1,89 @@
+<% content_for :page_title, "Detalle de Turno" %>
+
+<div class="mx-auto md:w-2/3 w-full px-4">
+  <%= link_to "Volver", calendario_path(date: @turno.start_time.to_date), class: "text-blue-600 hover:text-blue-500 font-medium mb-4 inline-block" %>
+
+  <div class="flex items-start justify-between mb-2">
+    <div>
+      <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-bold uppercase tracking-wide bg-primary/10 dark:bg-primary-dark/15 text-primary dark:text-primary-dark">
+        <%= @turno.cancha.name %> — <%= humanize_sport(@turno.cancha.sport) %>
+      </span>
+      <h1 class="font-bold text-2xl mt-2 dark:text-white">
+        <%= l(@turno.start_time, format: "%A %d de %B", locale: :es).capitalize %> — <%= @turno.start_time.strftime("%H:%M") %>
+      </h1>
+      <p class="text-text-secondary dark:text-text-secondary-dark text-sm mt-1">
+        Reservado por <%= @turno.reservation_name %>
+      </p>
+    </div>
+
+    <div class="flex flex-col items-end gap-2">
+      <%= render StatusPillComponent.new(status: @turno.payment_status) %>
+      <% if @turno.cancelled? %>
+        <%= render StatusPillComponent.new(status: :cancelled) %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @editable %>
+    <%= form_with model: @turno, url: turno_path(@turno), method: :patch, class: "mt-8" do |f| %>
+      <%= render InputFieldComponent.new(
+        label: "Nombre de quien reserva",
+        name: "turno[reservation_name]",
+        value: @turno.reservation_name,
+        error_message: @turno.errors[:reservation_name].first
+      ) %>
+
+      <div class="mt-6">
+        <h2 class="text-sm font-bold uppercase tracking-wide text-text-secondary dark:text-text-secondary-dark mb-2">
+          Roster
+        </h2>
+
+        <% if @turno.roster_entries.reject(&:new_record?).empty? %>
+          <p class="text-text-secondary dark:text-text-secondary-dark text-sm mb-3">
+            Todavía no cargaste el roster.
+          </p>
+        <% end %>
+
+        <div class="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-lg p-4 space-y-3">
+          <%= f.fields_for :roster_entries do |rf| %>
+            <%= rf.hidden_field :id %>
+            <%= rf.hidden_field :position %>
+            <%= render InputFieldComponent.new(
+              label: "Jugador",
+              name: "turno[roster_entries_attributes][#{rf.index}][name]",
+              value: rf.object.name,
+              placeholder: "Nombre del jugador"
+            ) %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <%= render ButtonPrimaryComponent.new(text: "Guardar Cambios") %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="mt-8">
+      <h2 class="text-sm font-bold uppercase tracking-wide text-text-secondary dark:text-text-secondary-dark mb-2">
+        Roster (Solo lectura)
+      </h2>
+      <div class="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-lg p-4 space-y-3">
+        <% if @turno.roster_entries.empty? %>
+          <p class="text-text-secondary dark:text-text-secondary-dark text-sm italic">Sin roster cargado</p>
+        <% else %>
+          <% @turno.roster_entries.each do |entry| %>
+            <div class="py-2 border-b border-border dark:border-border-dark last:border-0">
+              <span class="text-text-primary dark:text-text-primary-dark font-medium"><%= entry.name %></span>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @turno.active? && @turno.start_time >= Time.current %>
+    <div class="mt-4">
+      <%= button_to "Cancelar Turno", cancel_turno_path(@turno), method: :patch, form: { data: { turbo_confirm: "¿Confirmás que querés cancelar este turno? El horario quedará libre." } }, class: "text-danger dark:text-danger-dark hover:underline font-medium cursor-pointer" %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,21 @@
+<header class="bg-primary dark:bg-background-dark text-primary-foreground dark:text-text-primary-dark px-5 py-4 flex items-center justify-between">
+  <h1 class="text-xl font-bold"><%= @title %></h1>
+
+  <div class="flex items-center gap-2">
+    <button type="button" data-controller="dark-mode-toggle" data-action="click->dark-mode-toggle#toggle" class="flex items-center justify-center w-11 h-11 rounded-full hover:bg-black/10 dark:hover:bg-white/10" aria-label="Cambiar entre modo claro y oscuro">
+      <span aria-hidden="true">🌓</span>
+    </button>
+
+    <details class="relative">
+      <summary class="cursor-pointer list-none"><%= @current_user&.email_address %></summary>
+
+      <div class="absolute right-0 mt-2 min-w-40 rounded-md bg-surface dark:bg-surface-dark text-text-primary dark:text-text-primary-dark shadow-lg py-2 z-10">
+        <% if @current_user&.owner? %>
+          <%= link_to "Configuración", configuracion_path, class: "block px-4 py-2 hover:bg-background dark:hover:bg-background-dark" %>
+        <% end %>
+
+        <%= button_to "Cerrar sesión", session_path, method: :delete, class: "block w-full text-left px-4 py-2 underline hover:bg-background dark:hover:bg-background-dark" %>
+      </div>
+    </details>
+  </div>
+</header>

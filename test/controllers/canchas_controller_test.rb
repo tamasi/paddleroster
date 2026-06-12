@@ -1,0 +1,39 @@
+require "test_helper"
+
+class CanchasControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    @owner = users(:one)
+    @complejo = complejos(:piloto)
+    @cancha = canchas(:one)
+  end
+
+  test "should get index" do
+    sign_in_as @owner
+    get configuracion_canchas_url
+    assert_response :success
+  end
+
+  test "should create cancha" do
+    sign_in_as @owner
+    assert_difference("Cancha.count") do
+      post configuracion_canchas_url, params: { cancha: { name: "Nueva Cancha", sport: "padel" } }
+    end
+    assert_redirected_to configuracion_url
+  end
+
+  test "should update cancha" do
+    sign_in_as @owner
+    patch configuracion_cancha_url(@cancha), params: { cancha: { name: "Nombre Editado" } }
+    assert_redirected_to configuracion_url
+    @cancha.reload
+    assert_equal "Nombre Editado", @cancha.name
+  end
+
+  test "should destroy cancha" do
+    sign_in_as @owner
+    assert_difference("Cancha.count", -1) do
+      delete configuracion_cancha_url(@cancha)
+    end
+    assert_redirected_to configuracion_url
+  end
+end

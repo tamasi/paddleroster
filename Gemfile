@@ -22,6 +22,9 @@ gem "jbuilder"
 # View components for the Design System [https://viewcomponent.org]
 gem "view_component"
 
+# Authorization policies (RBAC) [https://github.com/varvet/pundit]
+gem "pundit"
+
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 

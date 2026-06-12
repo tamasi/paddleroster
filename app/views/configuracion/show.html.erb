@@ -1,0 +1,64 @@
+<% content_for :page_title, "Configuración" %>
+
+<div class="mx-auto md:w-2/3 w-full px-4">
+  <% if notice = flash[:notice] %>
+    <p class="py-2 px-3 bg-paid-bg dark:bg-paid-bg-dark mb-5 text-paid-fg dark:text-paid-fg-dark font-medium rounded-lg inline-block break-all" id="notice"><%= notice %></p>
+  <% end %>
+
+  <h1 class="font-bold text-3xl mb-8 text-text-primary dark:text-text-primary-dark">Configuración</h1>
+
+  <!-- Datos del Complejo -->
+  <section class="mb-10">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-text-primary dark:text-text-primary-dark">Datos del Complejo</h2>
+      <%= link_to "Editar", edit_configuracion_path, class: "text-primary dark:text-primary-dark hover:underline font-medium" %>
+    </div>
+
+    <div class="bg-surface dark:bg-surface-dark shadow rounded-lg p-6">
+      <p class="text-sm text-text-secondary dark:text-text-secondary-dark mb-1">Nombre</p>
+      <p class="text-lg text-text-primary dark:text-text-primary-dark mb-4"><%= @complejo.name %></p>
+
+      <p class="text-sm text-text-secondary dark:text-text-secondary-dark mb-1">Contacto</p>
+      <p class="text-lg text-text-primary dark:text-text-primary-dark"><%= @complejo.contact_info.presence || "No configurado" %></p>
+    </div>
+  </section>
+
+  <!-- Gestión de Canchas -->
+  <section class="mb-10">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-text-primary dark:text-text-primary-dark">Canchas</h2>
+      <%= link_to "Agregar Cancha", new_configuracion_cancha_path, class: "text-primary dark:text-primary-dark hover:underline font-medium" %>
+    </div>
+
+    <div class="bg-surface dark:bg-surface-dark shadow rounded-lg overflow-hidden">
+      <% if @canchas.any? %>
+        <ul class="divide-y divide-border dark:divide-border-dark">
+          <% @canchas.each do |cancha| %>
+            <li class="p-6 flex justify-between items-center">
+              <div>
+                <p class="font-medium text-text-primary dark:text-text-primary-dark"><%= cancha.name %></p>
+                <p class="text-sm text-text-secondary dark:text-text-secondary-dark capitalize"><%= cancha.sport.humanize %></p>
+              </div>
+              <div class="flex gap-4">
+                <%= link_to "Editar", edit_configuracion_cancha_path(cancha), class: "text-text-secondary dark:text-text-secondary-dark hover:text-primary dark:hover:text-primary-dark font-medium" %>
+                <%= button_to "Eliminar", configuracion_cancha_path(cancha), method: :delete, data: { confirm: "¿Estás seguro?" }, class: "text-danger dark:text-danger-dark hover:underline font-medium cursor-pointer" %>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="p-6 text-center text-text-secondary dark:text-text-secondary-dark">
+          No hay canchas configuradas.
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <!-- Gestión de Usuarios / Invitaciones -->
+  <section class="mb-10">
+    <h2 class="text-xl font-semibold text-text-primary dark:text-text-primary-dark mb-4">Empleados</h2>
+    <div class="mt-4">
+      <%= button_to "Invitar empleado", invitations_path, method: :post, class: "rounded-md px-4 py-2 bg-primary dark:bg-primary-dark hover:opacity-90 text-primary-foreground dark:text-primary-foreground-dark font-medium cursor-pointer" %>
+    </div>
+  </section>
+</div>

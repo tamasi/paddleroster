@@ -13,3 +13,13 @@
 - URLs muy largas guardadas en `session[:return_to_after_authenticating]` podrían exceder el límite de tamaño de la cookie de sesión (4KB). Edge case de baja probabilidad dado el tamaño actual de las rutas de la app.
 - `InputFieldComponent#field_id`: si `name` es `nil` o se reduce a string vacío tras `parameterize`, el `id`/`for` del campo queda vacío. Ningún caller actual (`sessions/new.html.erb`) dispara este caso.
 - Falta test de integración que cubra el flujo intermedio: login fallido seguido de login exitoso preservando `return_to_after_authenticating` (actualmente solo se testea el caso de éxito directo).
+
+## Deferred from: code review of 1-3-roles-y-control-de-acceso-dueno-empleado (2026-06-12)
+- FR-12 sin enforcement server-side: un Empleado autenticado puede acceder a `/configuracion` y `/reportes` directamente por URL — la UI solo oculta los links del nav/menú. Explícitamente alcance de Story 1.5 (`ConfiguracionPolicy`) y Story 4.1 (`ReportPolicy`), pero queda como gap real de seguridad hasta que se implementen esas policies.
+- `BottomNavComponent#active?` usa comparación exacta de `request.path`; no resaltará el tab padre para futuras rutas anidadas (ej. `/calendario/:id`). Revisar cuando Epic 2 agregue rutas de detalle de turno.
+- Alias de rutas (`calendario_path`, `pagos_path`, `reportes_path`, `configuracion_path`) podrían colisionar con nombres de ruta autogenerados si futuras stories agregan `resources :turnos`/`:payments`/etc. Validar al definir esas rutas.
+
+## Deferred from: code review of 1-4-invitacion-de-empleados (2026-06-12)
+- `users.complejo_id` es nullable a nivel de DB (sin backfill) — un `User` pre-existente sin `complejo` asignado haría que `Current.user.complejo.invitations.create!` lance `NoMethodError` (`nil.invitations`) en `InvitationsController#create`. Riesgo bajo en el estado actual del proyecto (sin usuarios reales, fixtures y seeds ya asociados a un Complejo); revisar si se cargan datos reales antes de Story 1.5.
+- Condición de carrera: dos requests concurrentes con el mismo token podrían pasar `redeemable?` antes de que cualquiera marque `used_at`, redimiendo la invitación dos veces. Edge case de baja probabilidad para el MVP actual.
+- Sin rate limiting ni UI para listar/revocar invitaciones generadas — cada click en "Invitar empleado" crea una fila nueva sin límite. Backlog para una story futura de gestión de invitaciones.

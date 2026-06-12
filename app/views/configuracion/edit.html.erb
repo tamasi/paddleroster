@@ -1,0 +1,28 @@
+<% content_for :page_title, "Editar Complejo" %>
+
+<div class="mx-auto md:w-2/3 w-full px-4">
+  <%= link_to "Volver", configuracion_path, class: "text-primary dark:text-primary-dark hover:underline font-medium mb-4 inline-block" %>
+
+  <h1 class="font-bold text-3xl mb-8 text-text-primary dark:text-text-primary-dark">Editar Complejo</h1>
+
+  <%= form_with model: @complejo, url: configuracion_path, method: :patch do |f| %>
+    <%= render InputFieldComponent.new(
+      label: "Nombre del Complejo",
+      name: "complejo[name]",
+      value: @complejo.name,
+      error_message: @complejo.errors[:name].first
+    ) %>
+
+    <%= render InputFieldComponent.new(
+      label: "Información de Contacto",
+      name: "complejo[contact_info]",
+      value: @complejo.contact_info,
+      error_message: @complejo.errors[:contact_info].first,
+      placeholder: "Ej: Dirección, Teléfono, etc."
+    ) %>
+
+    <div class="mt-8">
+      <%= render ButtonPrimaryComponent.new(text: "Guardar Cambios") %>
+    </div>
+  <% end %>
+</div>

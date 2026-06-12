@@ -1,0 +1,5 @@
+<nav class="fixed bottom-0 left-0 right-0 md:static flex md:flex-col justify-around md:justify-start border-t md:border-t-0 md:border-r border-border dark:border-border-dark bg-surface dark:bg-surface-dark py-2 md:py-4">
+  <% items.each do |item| %>
+    <%= link_to item[:label], item[:path], class: "flex-1 md:flex-none text-center md:text-left py-2 md:px-4 text-sm font-medium #{item_classes(item)}" %>
+  <% end %>
+</nav>

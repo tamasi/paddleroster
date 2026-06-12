@@ -1,0 +1,51 @@
+<div class="mx-auto md:w-2/3 w-full">
+  <% if @invitation&.redeemable? %>
+    <h1 class="font-bold text-4xl text-text-primary dark:text-text-primary-dark">Crear cuenta</h1>
+
+    <%= form_with url: invitation_path(params[:token]), method: :patch, scope: :user, class: "contents" do |form| %>
+      <%= render InputFieldComponent.new(
+        label: "Email",
+        name: "user[email_address]",
+        type: "email",
+        value: @user&.email_address,
+        error_message: @user&.errors&.[](:email_address)&.to_sentence,
+        required: true,
+        autofocus: true,
+        autocomplete: "username",
+        placeholder: "tu@email.com"
+      ) %>
+
+      <%= render InputFieldComponent.new(
+        label: "Contraseña",
+        name: "user[password]",
+        type: "password",
+        error_message: @user&.errors&.[](:password)&.to_sentence,
+        required: true,
+        autocomplete: "new-password",
+        placeholder: "Tu contraseña",
+        maxlength: 72
+      ) %>
+
+      <%= render InputFieldComponent.new(
+        label: "Confirmar contraseña",
+        name: "user[password_confirmation]",
+        type: "password",
+        error_message: @user&.errors&.[](:password_confirmation)&.to_sentence,
+        required: true,
+        autocomplete: "new-password",
+        placeholder: "Repetí tu contraseña",
+        maxlength: 72
+      ) %>
+
+      <div class="col-span-6 sm:flex sm:items-center sm:gap-4">
+        <div class="inline">
+          <%= form.submit "Crear cuenta", class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-primary dark:bg-primary-dark hover:opacity-90 text-primary-foreground dark:text-primary-foreground-dark inline-block font-medium cursor-pointer" %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <h1 class="font-bold text-4xl text-text-primary dark:text-text-primary-dark">Invitación no válida</h1>
+
+    <p class="mt-4 text-text-secondary dark:text-text-secondary-dark">Este link de invitación no es válido o expiró.</p>
+  <% end %>
+</div>

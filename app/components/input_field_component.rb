@@ -28,10 +28,10 @@ class InputFieldComponent < ViewComponent::Base
   def input_classes
     classes = [
       "block w-full rounded-md border px-3 py-3 text-base",
-      "bg-white dark:bg-gray-800",
-      "focus:outline-none focus:ring-2 focus:ring-blue-600"
+      "bg-surface dark:bg-surface-dark text-text-primary dark:text-text-primary-dark",
+      "focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-dark"
     ]
-    classes << (error? ? "border-red-600 dark:border-red-400" : "border-gray-300 dark:border-gray-700")
+    classes << (error? ? "border-danger dark:border-danger-dark" : "border-border dark:border-border-dark")
     classes.join(" ")
   end
 

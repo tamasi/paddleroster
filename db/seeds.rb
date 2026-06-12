@@ -9,8 +9,29 @@
 #   end
 
 if Rails.env.development?
-  User.find_or_create_by!(email_address: "admin@retroai.test") do |user|
+  complejo_piloto = Complejo.find_or_create_by!(name: "Complejo Piloto")
+
+  admin = User.find_or_create_by!(email_address: "admin@retroai.test") do |user|
     user.password = "password123"
     user.password_confirmation = "password123"
+    user.role = :owner
+    user.complejo = complejo_piloto
+  end
+  admin.update!(role: :owner) unless admin.owner?
+  admin.update!(complejo: complejo_piloto) unless admin.complejo == complejo_piloto
+
+  puts "Creando canchas piloto..."
+  [
+    { name: "Cancha 1 (Pádel)", sport: :padel },
+    { name: "Cancha 2 (Pádel)", sport: :padel },
+    { name: "Cancha 3 (Pádel)", sport: :padel },
+    { name: "Cancha 4 (Pádel)", sport: :padel },
+    { name: "Cancha 5 (Pádel)", sport: :padel },
+    { name: "Fútbol 5 - A", sport: :futbol_5 },
+    { name: "Fútbol 5 - B", sport: :futbol_5 }
+  ].each do |cancha_attrs|
+    complejo_piloto.canchas.find_or_create_by!(name: cancha_attrs[:name]) do |cancha|
+      cancha.sport = cancha_attrs[:sport]
+    end
   end
 end

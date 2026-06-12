@@ -1,0 +1,14 @@
+class Turno < ApplicationRecord
+  belongs_to :cancha
+  has_many :roster_entries, -> { order(:position) }, dependent: :destroy
+
+  accepts_nested_attributes_for :roster_entries, reject_if: proc { |attrs| attrs["name"].blank? }, allow_destroy: true
+
+  enum :origin, { manual: 0, bot: 1 }
+  enum :payment_status, { pending: 0, partial: 1, paid: 2 }
+  enum :status, { active: 0, cancelled: 1 }
+
+  validates :start_time, presence: true
+  validates :reservation_name, presence: true
+  validates :start_time, uniqueness: { scope: :cancha_id, conditions: -> { where.not(status: :cancelled) }, message: "ya tiene un turno reservado en este horario" }
+end

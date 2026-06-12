@@ -1,0 +1,9 @@
+one:
+  name: Cancha de Padel 1
+  sport: padel
+  complejo: piloto
+
+two:
+  name: Cancha de Futbol 1
+  sport: futbol_5
+  complejo: piloto
