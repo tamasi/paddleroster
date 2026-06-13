@@ -54,6 +54,19 @@ class TurnoTest < ActiveSupport::TestCase
     assert nuevo.valid?
   end
 
+  test "has default recurring false" do
+    turno = Turno.new(start_time: Time.current, cancha: @cancha, reservation_name: "Marcela")
+    assert_not turno.recurring?
+  end
+
+  test "recurring_rule and recurring_instances self-reference correctly" do
+    original = Turno.create!(start_time: Time.current, cancha: @cancha, reservation_name: "Marcela", recurring: true)
+    instance = Turno.create!(start_time: 1.week.from_now, cancha: @cancha, reservation_name: "Marcela", recurring_rule: original)
+
+    assert_equal original, instance.recurring_rule
+    assert_equal [ instance ], original.recurring_instances.to_a
+  end
+
   test "accepts nested roster_entries attributes and rejects blank ones" do
     turno = Turno.new(
       start_time: Time.current,

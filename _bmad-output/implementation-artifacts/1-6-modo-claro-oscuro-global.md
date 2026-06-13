@@ -4,7 +4,7 @@ baseline_commit: 6d103c9ca097d141691dbd49a0e0f69b4343c454
 
 # Story 1.6: Modo claro/oscuro global
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -50,6 +50,21 @@ so that pueda usar el Panel cómodamente en distintas condiciones de luz (ej. mo
   - [x] Subtask 5.1: Correr `bin/rails test` (suite completa, incluye el nuevo test de sistema) → 0 failures, 0 errors
   - [x] Subtask 5.2: Correr `bin/rubocop -A` → sin offenses
   - [x] Subtask 5.3: Verificar manualmente con `bin/dev`: login como `admin@retroai.test`, en Inicio clickear el toggle de tema en el header → la interfaz cambia a modo oscuro usando los tokens de `DESIGN.md` (fondo casi negro azulado `#10171F`, no gris Tailwind); recargar la página → el modo oscuro persiste sin parpadeo; clickear de nuevo → vuelve a modo claro; revisar Configuración, login y el formulario de invitación en ambos modos
+
+### Review Findings
+
+- [x] [Review][Patch] Broken Delete Confirmation — Turbo requires `turbo_confirm` instead of `confirm` [app/views/configuracion/show.html.erb:44]
+- [x] [Review][Patch] Unsafe LocalStorage Access — `localStorage` accessed without `try/catch` block [app/views/layouts/application.html.erb:22, app/javascript/controllers/dark_mode_toggle_controller.js:6]
+- [x] [Review][Patch] Accessibility Void for Errors — `InputFieldComponent` missing `aria-describedby` or `aria-invalid` [app/components/input_field_component.rb]
+- [x] [Review][Patch] Fragile Method Chaining — `cancha.sport.humanize` could trigger NoMethodError if nil [app/views/configuracion/show.html.erb:40]
+- [x] [Review][Patch] Inconsistent Error Display — `configuracion/edit.html.erb` uses `.first` instead of `.to_sentence` [app/views/configuracion/edit.html.erb]
+- [x] [Review][Patch] Generic colors for toggle hover — Toggle button uses arbitrary `hover:bg-black/10` instead of a DESIGN token [app/components/app_header_component.html.erb]
+- [x] [Review][Defer] Brittle Navigation State — `BottomNavComponent` relies on naive exact string match for active tabs — deferred, pre-existing
+- [x] [Review][Defer] Unmanaged Dropdown State — `<details>` dropdown lacks JS listener to close on outside click — deferred, pre-existing
+- [x] [Review][Defer] Swallowed System Errors — Authentication view ignores `alert` or `error` flashes — deferred, pre-existing
+- [x] [Review][Defer] MVC Violation via Params — `invitations/show.html.erb` directly accesses `params[:token]` in form URL — deferred, pre-existing
+- [x] [Review][Defer] Hardcoded String Debt — User-facing text is hardcoded instead of using I18n — deferred, pre-existing
+- [x] [Review][Defer] Opaque Invitation UX — "Invitar empleado" button fires POST without collecting email — deferred, pre-existing
 
 ## Dev Notes
 

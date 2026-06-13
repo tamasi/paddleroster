@@ -1,5 +1,7 @@
 <% content_for :page_title, "Configuración" %>
 
+<%= turbo_stream_from @complejo %>
+
 <div class="mx-auto md:w-2/3 w-full px-4">
   <% if notice = flash[:notice] %>
     <p class="py-2 px-3 bg-paid-bg dark:bg-paid-bg-dark mb-5 text-paid-fg dark:text-paid-fg-dark font-medium rounded-lg inline-block break-all" id="notice"><%= notice %></p>
@@ -31,26 +33,15 @@
     </div>
 
     <div class="bg-surface dark:bg-surface-dark shadow rounded-lg overflow-hidden">
-      <% if @canchas.any? %>
-        <ul class="divide-y divide-border dark:divide-border-dark">
-          <% @canchas.each do |cancha| %>
-            <li class="p-6 flex justify-between items-center">
-              <div>
-                <p class="font-medium text-text-primary dark:text-text-primary-dark"><%= cancha.name %></p>
-                <p class="text-sm text-text-secondary dark:text-text-secondary-dark capitalize"><%= cancha.sport.humanize %></p>
-              </div>
-              <div class="flex gap-4">
-                <%= link_to "Editar", edit_configuracion_cancha_path(cancha), class: "text-text-secondary dark:text-text-secondary-dark hover:text-primary dark:hover:text-primary-dark font-medium" %>
-                <%= button_to "Eliminar", configuracion_cancha_path(cancha), method: :delete, data: { confirm: "¿Estás seguro?" }, class: "text-danger dark:text-danger-dark hover:underline font-medium cursor-pointer" %>
-              </div>
-            </li>
-          <% end %>
-        </ul>
-      <% else %>
-        <div class="p-6 text-center text-text-secondary dark:text-text-secondary-dark">
-          No hay canchas configuradas.
-        </div>
-      <% end %>
+      <ul id="<%= dom_id(@complejo, :canchas) %>" class="divide-y divide-border dark:divide-border-dark">
+        <% if @canchas.any? %>
+          <%= render @canchas %>
+        <% else %>
+          <li class="p-6 text-center text-text-secondary dark:text-text-secondary-dark">
+            No hay canchas configuradas.
+          </li>
+        <% end %>
+      </ul>
     </div>
   </section>
 

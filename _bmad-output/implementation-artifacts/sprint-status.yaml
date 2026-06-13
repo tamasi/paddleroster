@@ -55,8 +55,8 @@ development_status:
   2-1-calendario-de-turnos-por-cancha-horario: done
   2-2-creacion-manual-de-turno: done
   2-3-cancelacion-de-turno-desde-el-panel: done
-  2-4-turnos-fijos-recurrentes: ready-for-dev
-  2-5-inicio-resumen-del-dia: backlog
+  2-4-turnos-fijos-recurrentes: done
+  2-5-inicio-resumen-del-dia: ready-for-dev
   epic-2-retrospective: optional
 
   epic-3: backlog

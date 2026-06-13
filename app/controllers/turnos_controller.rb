@@ -36,6 +36,7 @@ class TurnosController < ApplicationController
     @turno.start_time = slot_start_time(@date, @hour)
 
     if @turno.save
+      GenerateRecurringTurnosJob.perform_later(@turno.id) if @turno.recurring?
       redirect_to calendario_path(date: @date), notice: "Turno creado correctamente."
     else
       build_blank_roster_entries(@turno) if @turno.roster_entries.empty?
@@ -122,6 +123,8 @@ class TurnosController < ApplicationController
   end
 
   def turno_params
-    params.require(:turno).permit(:reservation_name, roster_entries_attributes: [ :id, :name, :position, :_destroy ])
+    attrs = [ :reservation_name, roster_entries_attributes: [ :id, :name, :position, :_destroy ] ]
+    attrs.unshift(:recurring) if action_name == "create" && policy(Turno).mark_recurring?
+    params.require(:turno).permit(*attrs)
   end
 end

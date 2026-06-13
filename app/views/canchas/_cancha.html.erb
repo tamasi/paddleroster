@@ -1,0 +1,10 @@
+<li id="<%= dom_id(cancha) %>" class="p-6 flex justify-between items-center">
+  <div>
+    <p class="font-medium text-text-primary dark:text-text-primary-dark"><%= cancha.name %></p>
+    <p class="text-sm text-text-secondary dark:text-text-secondary-dark capitalize"><%= humanize_sport(cancha.sport) %></p>
+  </div>
+  <div class="flex gap-4">
+    <%= link_to "Editar", edit_configuracion_cancha_path(cancha), class: "text-text-secondary dark:text-text-secondary-dark hover:text-primary dark:hover:text-primary-dark font-medium" %>
+    <%= button_to "Eliminar", configuracion_cancha_path(cancha), method: :delete, form: { data: { turbo_confirm: "¿Estás seguro?" } }, class: "text-danger dark:text-danger-dark hover:underline font-medium cursor-pointer" %>
+  </div>
+</li>

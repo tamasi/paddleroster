@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_12_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_12_220000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -68,12 +68,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_210000) do
     t.datetime "created_at", null: false
     t.integer "origin", default: 0, null: false
     t.integer "payment_status", default: 0, null: false
+    t.boolean "recurring", default: false, null: false
+    t.bigint "recurring_rule_id"
     t.string "reservation_name"
     t.datetime "start_time", null: false
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["cancha_id", "start_time"], name: "index_turnos_on_cancha_id_and_start_time_active", unique: true, where: "(status = 0)"
     t.index ["cancha_id"], name: "index_turnos_on_cancha_id"
+    t.index ["recurring_rule_id"], name: "index_turnos_on_recurring_rule_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -93,5 +96,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_210000) do
   add_foreign_key "roster_entries", "turnos"
   add_foreign_key "sessions", "users"
   add_foreign_key "turnos", "canchas"
+  add_foreign_key "turnos", "turnos", column: "recurring_rule_id"
   add_foreign_key "users", "complejos"
 end

@@ -10,14 +10,14 @@
       label: "Nombre del Complejo",
       name: "complejo[name]",
       value: @complejo.name,
-      error_message: @complejo.errors[:name].first
+      error_message: @complejo.errors[:name].to_sentence.presence
     ) %>
 
     <%= render InputFieldComponent.new(
       label: "Información de Contacto",
       name: "complejo[contact_info]",
       value: @complejo.contact_info,
-      error_message: @complejo.errors[:contact_info].first,
+      error_message: @complejo.errors[:contact_info].to_sentence.presence,
       placeholder: "Ej: Dirección, Teléfono, etc."
     ) %>
 

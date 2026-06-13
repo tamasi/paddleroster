@@ -19,8 +19,12 @@
     <link rel="apple-touch-icon" href="/icon.png">
 
     <script>
-      if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-        document.documentElement.classList.add("dark")
+      try {
+        if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark")
+        }
+      } catch (e) {
+        // Fallback for environments with restricted storage access
       }
     </script>
 

@@ -3,7 +3,6 @@ class ConfiguracionController < ApplicationController
 
   def show
     authorize :configuracion
-    @invitation = Invitation.new
     @canchas = @complejo.canchas
   end
 
@@ -24,6 +23,7 @@ class ConfiguracionController < ApplicationController
 
   def set_complejo
     @complejo = Current.user.complejo
+    redirect_to root_path, alert: "No tenés un complejo asignado." if @complejo.nil?
   end
 
   def complejo_params

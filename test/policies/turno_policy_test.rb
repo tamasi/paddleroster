@@ -26,6 +26,11 @@ class TurnoPolicyTest < ActiveSupport::TestCase
     assert policy.cancel?
   end
 
+  test "mark_recurring? is true for owner and false for employee" do
+    assert TurnoPolicy.new(@owner, @turno).mark_recurring?
+    assert_not TurnoPolicy.new(@employee, @turno).mark_recurring?
+  end
+
   test "cannot view or update turnos from another complex" do
     other_complejo = Complejo.create!(name: "Otro")
     other_cancha = Cancha.create!(complejo: other_complejo, name: "Cancha Ajena", sport: :padel)

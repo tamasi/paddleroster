@@ -1,5 +1,7 @@
 class Turno < ApplicationRecord
   belongs_to :cancha
+  belongs_to :recurring_rule, class_name: "Turno", optional: true
+  has_many :recurring_instances, class_name: "Turno", foreign_key: :recurring_rule_id, dependent: :nullify
   has_many :roster_entries, -> { order(:position) }, dependent: :destroy
 
   accepts_nested_attributes_for :roster_entries, reject_if: proc { |attrs| attrs["name"].blank? }, allow_destroy: true

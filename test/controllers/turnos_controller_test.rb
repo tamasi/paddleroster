@@ -38,6 +38,24 @@ class TurnosControllerTest < ActionDispatch::IntegrationTest
     assert_select "span", text: /#{@cancha.name}/
   end
 
+  test "new shows 'Marcar como recurrente' checkbox for owner" do
+    sign_in_as(@user)
+
+    get new_turno_path(cancha_id: @cancha.id, date: "2026-06-15", hour: 18)
+
+    assert_response :success
+    assert_select "input#turno_recurring[type=checkbox]"
+  end
+
+  test "new does not show 'Marcar como recurrente' checkbox for employee" do
+    sign_in_as(users(:two))
+
+    get new_turno_path(cancha_id: @cancha.id, date: "2026-06-15", hour: 18)
+
+    assert_response :success
+    assert_select "input#turno_recurring", count: 0
+  end
+
   test "new redirects to calendario when cancha does not exist" do
     sign_in_as(@user)
 
@@ -70,6 +88,35 @@ class TurnosControllerTest < ActionDispatch::IntegrationTest
     assert turno.pending?
     assert_equal 1, turno.roster_entries.count
     assert_equal "Juan", turno.roster_entries.first.name
+  end
+
+  test "create with recurring: 1 as owner marks turno recurring and enqueues job (AC1)" do
+    sign_in_as(@user)
+
+    assert_enqueued_with(job: GenerateRecurringTurnosJob) do
+      post turnos_path, params: {
+        cancha_id: @cancha.id, date: "2026-06-15", hour: 18,
+        turno: { reservation_name: "Marcela", recurring: "1" }
+      }
+    end
+
+    turno = Turno.order(:created_at).last
+    assert turno.recurring?
+    assert_enqueued_with(job: GenerateRecurringTurnosJob, args: [ turno.id ])
+  end
+
+  test "create with recurring: 1 as employee does not mark turno recurring and does not enqueue job (AC2)" do
+    sign_in_as(users(:two))
+
+    assert_no_enqueued_jobs only: GenerateRecurringTurnosJob do
+      post turnos_path, params: {
+        cancha_id: @cancha.id, date: "2026-06-15", hour: 18,
+        turno: { reservation_name: "Marcela", recurring: "1" }
+      }
+    end
+
+    turno = Turno.order(:created_at).last
+    assert_not turno.recurring?
   end
 
   test "create without reservation_name is invalid and re-renders the form" do
@@ -190,6 +237,51 @@ class TurnosControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?]", cancel_turno_path(turno), count: 0
   end
 
+  test "recurring turno generates independent instances visible in future calendarios (AC3)" do
+    sign_in_as(@user)
+    target_date = Date.tomorrow
+
+    assert_enqueued_with(job: GenerateRecurringTurnosJob) do
+      post turnos_path, params: {
+        cancha_id: @cancha.id, date: target_date.to_s, hour: 18,
+        turno: { reservation_name: "Marcela", recurring: "1" }
+      }
+    end
+
+    perform_enqueued_jobs
+
+    instance = Turno.find_by(recurring_rule: Turno.order(:created_at).first, start_time: target_date.to_time.change(hour: 18) + 1.week)
+    assert_not_nil instance
+    assert instance.pending?
+
+    get calendario_path(date: (target_date + 1.week).to_s)
+
+    assert_response :success
+    assert_select "h3", text: "Marcela"
+  end
+
+  test "cancelling a recurring instance does not affect the original turno nor other instances (AC4)" do
+    sign_in_as(@user)
+    target_date = Date.tomorrow
+
+    post turnos_path, params: {
+      cancha_id: @cancha.id, date: target_date.to_s, hour: 18,
+      turno: { reservation_name: "Marcela", recurring: "1" }
+    }
+
+    perform_enqueued_jobs
+
+    original = Turno.order(:created_at).first
+    instances = original.recurring_instances.order(:start_time).to_a
+    first_instance, second_instance = instances[0], instances[1]
+
+    patch cancel_turno_path(first_instance)
+
+    assert first_instance.reload.cancelled?
+    assert original.reload.active?
+    assert second_instance.reload.active?
+  end
+
   test "update edits reservation_name and roster entries" do
     sign_in_as(@user)
     turno = Turno.create!(cancha: @cancha, start_time: Time.current, reservation_name: "Marcela")
@@ -208,5 +300,16 @@ class TurnosControllerTest < ActionDispatch::IntegrationTest
     turno.reload
     assert_equal "Marcela Actualizada", turno.reservation_name
     assert_equal "Juan Actualizado", turno.roster_entries.first.name
+  end
+
+  test "update ignores recurring param and does not enqueue the generator job" do
+    sign_in_as(@user)
+    turno = Turno.create!(cancha: @cancha, start_time: Time.current, reservation_name: "Marcela")
+
+    assert_no_enqueued_jobs only: GenerateRecurringTurnosJob do
+      patch turno_path(turno), params: { turno: { reservation_name: "Marcela", recurring: "1" } }
+    end
+
+    assert_not turno.reload.recurring?
   end
 end

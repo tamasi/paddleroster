@@ -50,6 +50,13 @@
       </div>
     </div>
 
+    <% if policy(Turno).mark_recurring? %>
+      <div class="mt-6 flex items-center gap-2">
+        <%= check_box_tag "turno[recurring]", "1", @turno.recurring, id: "turno_recurring", class: "rounded border-border dark:border-border-dark text-primary focus:ring-primary" %>
+        <%= label_tag "turno_recurring", "Marcar como recurrente (semanal)", class: "text-sm text-text-secondary dark:text-text-secondary-dark" %>
+      </div>
+    <% end %>
+
     <div class="mt-8">
       <%= render ButtonPrimaryComponent.new(text: "Crear Turno") %>
     </div>

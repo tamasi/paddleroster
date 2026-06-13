@@ -2,6 +2,8 @@ class CanchasController < ApplicationController
   before_action :set_complejo
   before_action :set_cancha, only: %i[ show edit update destroy ]
 
+  rescue_from ActiveRecord::RecordNotFound, with: :cancha_not_found
+
   def index
     authorize Cancha
     @canchas = @complejo.canchas
@@ -14,12 +16,17 @@ class CanchasController < ApplicationController
 
   def create
     authorize Cancha
-    @cancha = @complejo.canchas.build(cancha_params)
+    @cancha = @complejo.canchas.build(cancha_params.except(:sport))
+    @cancha.sport = cancha_params[:sport] if cancha_params.key?(:sport)
+
     if @cancha.save
       redirect_to configuracion_path, notice: "Cancha creada correctamente."
     else
       render :new, status: :unprocessable_entity
     end
+  rescue ArgumentError
+    @cancha.errors.add(:sport, "no es válido")
+    render :new, status: :unprocessable_entity
   end
 
   def edit
@@ -28,11 +35,17 @@ class CanchasController < ApplicationController
 
   def update
     authorize @cancha
-    if @cancha.update(cancha_params)
+    @cancha.assign_attributes(cancha_params.except(:sport))
+    @cancha.sport = cancha_params[:sport] if cancha_params.key?(:sport)
+
+    if @cancha.save
       redirect_to configuracion_path, notice: "Cancha actualizada correctamente."
     else
       render :edit, status: :unprocessable_entity
     end
+  rescue ArgumentError
+    @cancha.errors.add(:sport, "no es válido")
+    render :edit, status: :unprocessable_entity
   end
 
   def destroy
@@ -45,6 +58,7 @@ class CanchasController < ApplicationController
 
   def set_complejo
     @complejo = Current.user.complejo
+    redirect_to root_path, alert: "No tenés un complejo asignado." if @complejo.nil?
   end
 
   def set_cancha
@@ -53,5 +67,9 @@ class CanchasController < ApplicationController
 
   def cancha_params
     params.require(:cancha).permit(:name, :sport)
+  end
+
+  def cancha_not_found
+    redirect_to configuracion_path, alert: "La cancha solicitada no existe."
   end
 end
