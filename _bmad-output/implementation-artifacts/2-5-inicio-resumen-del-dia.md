@@ -3,8 +3,8 @@ story_id: "2.5"
 story_key: "2-5-inicio-resumen-del-dia"
 epic_id: "2"
 title: "Inicio — resumen del día"
-status: "review"
-last_updated: "2026-06-12"
+status: "done"
+last_updated: "2026-06-13"
 baseline_commit: e48222ebff438d684b74f89f80ef803b92d54a76
 ---
 
@@ -163,7 +163,8 @@ baseline_commit: e48222ebff438d684b74f89f80ef803b92d54a76
 - 2026-06-12: Tasks/Subtasks generadas a partir de Acceptance Criteria y Technical Requirements (no estaban presentes en la versión inicial del story file).
 - 2026-06-12: Implementación completa (Tasks 1-7) — Inicio con resumen de ocupación de hoy por cancha (`InicioController`, `OccupancyBarComponent`, pull-to-refresh). `HomeController` reemplazado. Status → review.
 - 2026-06-13: Fixes de code-review aplicados (5 hallazgos: estado vacío sin canchas, divisor de ocupación inconsistente con horario operativo real, clamping duplicado, ruta `/inicio` duplicada, cálculo O(N×M) de ocupación).
+- 2026-06-13: Story marcada como done tras revisión completa.
 
 ---
-**Status:** review
+**Status:** done
 *Ultimate context engine analysis completed - comprehensive developer guide created*
