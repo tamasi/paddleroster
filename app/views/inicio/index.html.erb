@@ -1,0 +1,29 @@
+<% content_for :page_title, "Inicio" %>
+
+<div class="mx-auto md:w-2/3 w-full" data-controller="pull-to-refresh">
+  <h2 class="text-xs font-bold uppercase tracking-wider text-text-secondary dark:text-text-secondary-dark mb-2">
+    Ocupación de hoy
+  </h2>
+
+  <% if @canchas.empty? %>
+    <div class="text-text-secondary dark:text-text-secondary-dark p-8 text-center">
+      <p>No hay canchas configuradas en este complejo.<br>
+      <% if Current.user.owner? %>
+        <%= link_to "Ir a Configuración", configuracion_path, class: "text-primary dark:text-primary-dark font-medium hover:underline mt-2 inline-block" %>
+      <% end %>
+      </p>
+    </div>
+  <% else %>
+    <% if @no_turnos_hoy %>
+      <p class="text-sm font-medium text-text-secondary dark:text-text-secondary-dark text-center py-3">
+        No hay turnos para hoy
+      </p>
+    <% end %>
+
+    <div class="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-2xl p-4 flex flex-col gap-3">
+      <% @canchas.each do |cancha| %>
+        <%= render OccupancyBarComponent.new(label: cancha.name, percentage: @ocupacion_por_cancha[cancha]) %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

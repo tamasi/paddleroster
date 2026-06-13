@@ -5,8 +5,7 @@ class TurnosController < ApplicationController
     @date = parse_date(params[:date]) || Date.current
     @canchas = @complejo.canchas.order(:name)
 
-    # Rango de horarios: 14:00 a 23:00 (ejemplo por defecto para MVP)
-    @hours = (14..23).to_a
+    @hours = Complejo::HORARIO_OPERATIVO.to_a
 
     # Recuperar los turnos del día para las canchas del complejo
     @turnos = Turno.active.where(cancha: @canchas, start_time: @date.all_day)

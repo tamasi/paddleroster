@@ -56,7 +56,7 @@ development_status:
   2-2-creacion-manual-de-turno: done
   2-3-cancelacion-de-turno-desde-el-panel: done
   2-4-turnos-fijos-recurrentes: done
-  2-5-inicio-resumen-del-dia: ready-for-dev
+  2-5-inicio-resumen-del-dia: review
   epic-2-retrospective: optional
 
   epic-3: backlog
