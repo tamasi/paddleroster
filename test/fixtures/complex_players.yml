@@ -1,0 +1,11 @@
+carlos_piloto:
+  player: carlos
+  complejo: piloto
+  created_at: 2026-01-01 00:00:00
+  updated_at: 2026-01-01 00:00:00
+
+ana_piloto:
+  player: ana
+  complejo: piloto
+  created_at: 2026-01-01 00:00:00
+  updated_at: 2026-01-01 00:00:00

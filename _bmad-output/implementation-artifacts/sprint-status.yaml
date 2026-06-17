@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-11
-last_updated: 2026-06-13
+last_updated: 2026-06-17 # stories 5.1 & 5.2 implementadas (bot de WhatsApp)
 project: retroai
 project_key: NOKEY
 tracking_system: file-system
@@ -68,9 +68,9 @@ development_status:
   4-1-reporte-de-ocupacion-por-cancha-y-periodo: backlog
   epic-4-retrospective: optional
 
-  epic-5: backlog
-  5-1-infraestructura-del-bot-de-whatsapp: backlog
-  5-2-creacion-de-turno-y-roster-inicial-via-bot-fr-1: backlog
+  epic-5: in-progress
+  5-1-infraestructura-del-bot-de-whatsapp: done
+  5-2-creacion-de-turno-y-roster-inicial-via-bot-fr-1: review
   5-3-confirmacion-individual-de-asistencia-fr-2: backlog
   5-4-reemplazo-auto-gestionado-de-suplentes-fr-3: backlog
   epic-5-retrospective: optional

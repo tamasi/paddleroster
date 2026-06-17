@@ -3,19 +3,20 @@
 class StatusPillComponent < ViewComponent::Base
   include StatusPresentationHelper
 
-  def initialize(status:)
-    @status = status.to_s
+  def initialize(status:, context: :payment)
+    @status  = status.to_s
+    @context = context
   end
 
   def wrapper_classes
     case @status
-    when "paid"
+    when "paid", "confirmed"
       "bg-paid-bg dark:bg-paid-bg-dark text-paid-fg dark:text-paid-fg-dark"
-    when "partial"
+    when "partial", "replacement"
       "bg-partial-bg dark:bg-partial-bg-dark text-partial-fg dark:text-partial-fg-dark"
     when "pending"
       "bg-pending-bg dark:bg-pending-bg-dark text-pending-fg dark:text-pending-fg-dark"
-    when "cancelled"
+    when "cancelled", "uncovered"
       "bg-danger/10 text-danger dark:bg-danger-dark/15 dark:text-danger-dark"
     else
       "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
@@ -24,13 +25,13 @@ class StatusPillComponent < ViewComponent::Base
 
   def icon_classes
     case @status
-    when "paid"
+    when "paid", "confirmed"
       "text-success dark:text-success-dark"
-    when "partial"
+    when "partial", "replacement"
       "text-warning dark:text-warning-dark"
     when "pending"
       "text-accent dark:text-accent-dark"
-    when "cancelled"
+    when "cancelled", "uncovered"
       "text-danger dark:text-danger-dark"
     else
       "text-gray-500"
@@ -38,7 +39,9 @@ class StatusPillComponent < ViewComponent::Base
   end
 
   def label
-    if Turno.statuses.keys.include?(@status)
+    if @context == :roster
+      humanize_confirmation_status(@status)
+    elsif Turno.statuses.keys.include?(@status)
       humanize_turno_status(@status)
     else
       humanize_payment_status(@status)

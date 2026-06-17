@@ -1,0 +1,15 @@
+one:
+  phone: "+5491155556666"
+  body: "Hola capitán!"
+  status: "pending"
+  retry_count: 0
+  created_at: 2026-01-01 00:00:00
+  updated_at: 2026-01-01 00:00:00
+
+two:
+  phone: "+5491133334444"
+  body: "Tu turno fue confirmado."
+  status: "sent"
+  retry_count: 0
+  created_at: 2026-01-01 00:00:00
+  updated_at: 2026-01-01 00:00:00

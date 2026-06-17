@@ -37,3 +37,4 @@
 /whatsapp-service/node_modules
 /whatsapp-service/dist
 /whatsapp-service/.env
+/whatsapp-service/session

@@ -23,4 +23,14 @@ module StatusPresentationHelper
     else status.to_s.humanize
     end
   end
+
+  def humanize_confirmation_status(status)
+    case status.to_s
+    when "pending"     then "Pendiente"
+    when "confirmed"   then "Confirmado"
+    when "replacement" then "Reemplazo"
+    when "uncovered"   then "Sin cubrir"
+    else status.to_s.humanize
+    end
+  end
 end

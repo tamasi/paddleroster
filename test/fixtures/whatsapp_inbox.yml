@@ -1,0 +1,13 @@
+one:
+  phone: "+5491155556666"
+  raw_body: "Hola Bot"
+  processed: false
+  created_at: 2026-01-01 00:00:00
+  updated_at: 2026-01-01 00:00:00
+
+two:
+  phone: "+5491133334444"
+  raw_body: "Confirmo asistencia"
+  processed: true
+  created_at: 2026-01-01 00:00:00
+  updated_at: 2026-01-01 00:00:00
