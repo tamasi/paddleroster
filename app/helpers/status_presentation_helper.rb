@@ -16,7 +16,7 @@ module StatusPresentationHelper
   def humanize_sport(sport)
     case sport.to_s
     when "padel" then "Pádel"
-    when "futbol5" then "Fútbol 5"
+    when "futbol_5", "futbol5" then "Fútbol 5"
     else sport.to_s.humanize
     end
   end

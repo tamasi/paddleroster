@@ -1,7 +1,50 @@
 <% content_for :page_title, "Reportes" %>
 
-<div class="mx-auto md:w-2/3 w-full">
-  <h1 class="font-bold text-4xl">Reportes</h1>
+<div class="mx-auto w-full">
+  <h1 class="text-2xl font-bold text-text-primary dark:text-text-primary-dark mb-4">Reportes</h1>
 
-  <p class="mt-4 text-gray-500">Próximamente</p>
+  <%# Filter pills — período %>
+  <div class="flex flex-wrap gap-2 mb-3">
+    <%= link_to "Esta semana", reportes_path(period: "week", sport: @sport),
+        class: "px-4 py-2 rounded-xl text-sm font-medium border transition-colors #{@period == 'week' ? 'border-primary text-primary dark:text-primary-dark dark:border-primary-dark bg-surface dark:bg-surface-dark' : 'border-border dark:border-border-dark text-text-secondary dark:text-text-secondary-dark bg-surface dark:bg-surface-dark'}" %>
+    <%= link_to "Este mes", reportes_path(period: "month", sport: @sport),
+        class: "px-4 py-2 rounded-xl text-sm font-medium border transition-colors #{@period == 'month' ? 'border-primary text-primary dark:text-primary-dark dark:border-primary-dark bg-surface dark:bg-surface-dark' : 'border-border dark:border-border-dark text-text-secondary dark:text-text-secondary-dark bg-surface dark:bg-surface-dark'}" %>
+  </div>
+
+  <%# Filter pills — deporte %>
+  <div class="flex flex-wrap gap-2 mb-6">
+    <%= link_to "Todo", reportes_path(period: @period),
+        class: "px-4 py-2 rounded-xl text-sm font-medium border transition-colors #{@sport.nil? ? 'border-primary text-primary dark:text-primary-dark dark:border-primary-dark bg-surface dark:bg-surface-dark' : 'border-border dark:border-border-dark text-text-secondary dark:text-text-secondary-dark bg-surface dark:bg-surface-dark'}" %>
+    <%= link_to "Pádel", reportes_path(period: @period, sport: "padel"),
+        class: "px-4 py-2 rounded-xl text-sm font-medium border transition-colors #{@sport == 'padel' ? 'border-primary text-primary dark:text-primary-dark dark:border-primary-dark bg-surface dark:bg-surface-dark' : 'border-border dark:border-border-dark text-text-secondary dark:text-text-secondary-dark bg-surface dark:bg-surface-dark'}" %>
+    <%= link_to "Fútbol 5", reportes_path(period: @period, sport: "futbol_5"),
+        class: "px-4 py-2 rounded-xl text-sm font-medium border transition-colors #{@sport == 'futbol_5' ? 'border-primary text-primary dark:text-primary-dark dark:border-primary-dark bg-surface dark:bg-surface-dark' : 'border-border dark:border-border-dark text-text-secondary dark:text-text-secondary-dark bg-surface dark:bg-surface-dark'}" %>
+  </div>
+
+  <% if @canchas.empty? %>
+    <div class="text-text-secondary dark:text-text-secondary-dark p-8 text-center">
+      <p>No hay canchas configuradas para este filtro.</p>
+      <% if Current.user.owner? && @sport.nil? %>
+        <%= link_to "Ir a Configuración", configuracion_path, class: "text-primary dark:text-primary-dark font-medium hover:underline mt-2 inline-block" %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <% @report_days.each do |day_data| %>
+        <div class="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-2xl p-4">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-text-secondary dark:text-text-secondary-dark mb-3">
+            <%= I18n.l(day_data[:date], format: "%A").capitalize %> <%= day_data[:date].strftime("%d/%m/%Y") %>
+          </h2>
+          <div class="flex flex-col gap-3">
+            <% day_data[:canchas_data].each do |data| %>
+              <%= render OccupancyBarComponent.new(
+                    label: "#{data[:cancha].name} — #{humanize_sport(data[:cancha].sport)}",
+                    percentage: data[:percentage]
+                  ) %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </div>

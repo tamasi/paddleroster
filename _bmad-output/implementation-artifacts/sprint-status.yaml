@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-11
-last_updated: 2026-06-17 # story 3.2 implementada (registro de pago)
+last_updated: 2026-06-17 # story 4.1 implementada (reporte de ocupación)
 project: retroai
 project_key: NOKEY
 tracking_system: file-system
@@ -64,8 +64,8 @@ development_status:
   3-2-registro-de-pago: done
   epic-3-retrospective: optional
 
-  epic-4: backlog
-  4-1-reporte-de-ocupacion-por-cancha-y-periodo: backlog
+  epic-4: done
+  4-1-reporte-de-ocupacion-por-cancha-y-periodo: done
   epic-4-retrospective: optional
 
   epic-5: in-progress
