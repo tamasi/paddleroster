@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-11
-last_updated: 2026-06-17 # story 4.1 implementada (reporte de ocupación)
+last_updated: 2026-06-17 # epic-2 marcado done (todas sus historias completas)
 project: retroai
 project_key: NOKEY
 tracking_system: file-system
@@ -51,7 +51,7 @@ development_status:
   1-6-modo-claro-oscuro-global: done
   epic-1-retrospective: optional
 
-  epic-2: in-progress
+  epic-2: done
   2-1-calendario-de-turnos-por-cancha-horario: done
   2-2-creacion-manual-de-turno: done
   2-3-cancelacion-de-turno-desde-el-panel: done
