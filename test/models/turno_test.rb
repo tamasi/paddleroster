@@ -67,6 +67,22 @@ class TurnoTest < ActiveSupport::TestCase
     assert_equal [ instance ], original.recurring_instances.to_a
   end
 
+  test "price is optional (nil is valid)" do
+    turno = Turno.new(start_time: Time.current, cancha: @cancha, reservation_name: "Marcela", price: nil)
+    assert turno.valid?
+  end
+
+  test "price must be greater than zero when present" do
+    turno = Turno.new(start_time: Time.current, cancha: @cancha, reservation_name: "Marcela", price: 0)
+    assert_not turno.valid?
+    assert_not_empty turno.errors[:price]
+  end
+
+  test "price can be a positive decimal" do
+    turno = Turno.new(start_time: Time.current, cancha: @cancha, reservation_name: "Marcela", price: 12_000)
+    assert turno.valid?
+  end
+
   test "accepts nested roster_entries attributes and rejects blank ones" do
     turno = Turno.new(
       start_time: Time.current,

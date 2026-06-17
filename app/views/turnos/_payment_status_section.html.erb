@@ -1,0 +1,76 @@
+<div id="payment-status-section-<%= turno.id %>">
+  <div class="flex items-start justify-between mb-2">
+    <div class="flex-1">
+      <% if turno.price.present? %>
+        <p class="text-sm text-text-secondary dark:text-text-secondary-dark mb-1">
+          Monto del turno: <span class="font-semibold text-text-primary dark:text-text-primary-dark"><%= format_amount(turno.price) %></span>
+        </p>
+      <% end %>
+    </div>
+
+    <div class="flex flex-col items-end gap-2">
+      <div class="flex items-center gap-2">
+        <%= render StatusPillComponent.new(status: turno.payment_status) %>
+        <% if turno.partial? %>
+          <span class="text-sm font-medium text-text-secondary dark:text-text-secondary-dark"><%= format_amount(turno.total_paid) %></span>
+        <% end %>
+      </div>
+      <% if turno.cancelled? %>
+        <%= render StatusPillComponent.new(status: :cancelled) %>
+      <% end %>
+    </div>
+  </div>
+
+  <% unless turno.paid? %>
+    <div class="mt-4">
+      <% if defined?(payment_error) && payment_error.present? %>
+        <div class="mb-3 p-3 rounded-md bg-danger/10 dark:bg-danger-dark/10 text-danger dark:text-danger-dark text-sm" role="alert">
+          <%= payment_error %>
+        </div>
+      <% end %>
+
+      <details class="group">
+        <summary class="w-full py-3 px-4 rounded-md font-semibold text-white bg-accent dark:bg-accent-dark hover:opacity-90 cursor-pointer list-none text-center focus:outline-none focus:ring-2 focus:ring-accent dark:focus:ring-accent-dark">
+          Registrar pago
+        </summary>
+
+        <div class="mt-4 p-4 bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-lg">
+          <%= form_with url: turno_payments_path(turno), method: :post do |f| %>
+            <div class="mb-4">
+              <%= label_tag "payment_amount", "Monto a registrar", class: "block text-sm font-medium text-text-secondary dark:text-text-secondary-dark mb-2" %>
+              <input type="number"
+                     id="payment_amount"
+                     name="payment[amount]"
+                     min="1"
+                     step="1"
+                     placeholder="Ej: 12000"
+                     required
+                     class="block w-full rounded-md border border-border dark:border-border-dark px-3 py-3 text-base bg-surface dark:bg-surface-dark text-text-primary dark:text-text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-dark" />
+            </div>
+
+            <div class="mb-4 space-y-2">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="payment[payment_type]" value="complete"
+                       <%= turno.pending? ? "checked" : "" %>
+                       class="text-primary focus:ring-primary" />
+                <span class="text-sm text-text-primary dark:text-text-primary-dark">Pago completo</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="payment[payment_type]" value="partial"
+                       <%= turno.partial? ? "checked" : "" %>
+                       class="text-primary focus:ring-primary" />
+                <span class="text-sm text-text-primary dark:text-text-primary-dark">Pago parcial</span>
+              </label>
+            </div>
+
+            <button type="submit"
+                    class="w-full py-3 px-4 rounded-md font-semibold text-white bg-accent dark:bg-accent-dark hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-accent dark:focus:ring-accent-dark"
+                    data-turbo-submits-with="Guardando...">
+              Confirmar pago
+            </button>
+          <% end %>
+        </div>
+      </details>
+    </div>
+  <% end %>
+</div>

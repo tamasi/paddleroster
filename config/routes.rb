@@ -8,6 +8,7 @@ Rails.application.routes.draw do
     member do
       patch :cancel
     end
+    resources :payments, only: [ :create ]
   end
   get "pagos", to: "payments#index", as: :pagos
   get "reportes", to: "reports#index", as: :reportes

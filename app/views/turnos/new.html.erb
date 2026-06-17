@@ -33,6 +33,17 @@
       placeholder: "Ej: Marcela"
     ) %>
 
+    <%= render InputFieldComponent.new(
+      label: "Monto del turno (opcional)",
+      name: "turno[price]",
+      type: "number",
+      value: @turno.price,
+      error_message: @turno.errors[:price].first,
+      placeholder: "Ej: 12000",
+      min: "1",
+      step: "1"
+    ) %>
+
     <div class="mt-6">
       <h2 class="section-title text-sm font-bold uppercase tracking-wide text-text-secondary dark:text-text-secondary-dark mb-2">
         Roster (opcional)

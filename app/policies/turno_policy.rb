@@ -22,4 +22,8 @@ class TurnoPolicy < ApplicationPolicy
   def cancel?
     user&.complejo.present? && record.cancha.complejo_id == user.complejo_id
   end
+
+  def create_payment?
+    user&.complejo.present? && record.cancha.complejo_id == user.complejo_id && !record.paid? && !record.cancelled?
+  end
 end

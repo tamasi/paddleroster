@@ -1,4 +1,5 @@
 <% content_for :page_title, "Calendario" %>
+<%= turbo_stream_from "complex_#{@complejo.id}_payments" %>
 
 <div class="h-full flex flex-col">
   <!-- Navegación de Fechas -->
@@ -73,7 +74,9 @@
                   <% turno = @turnos[[cancha.id, hour]] %>
                   
                   <% if turno %>
-                    <%= render CardTurnoComponent.new(turno: turno) %>
+                    <div id="card-turno-<%= turno.id %>">
+                      <%= render CardTurnoComponent.new(turno: turno) %>
+                    </div>
                   <% else %>
                     <!-- Slot Vacío -->
                     <%= link_to new_turno_path(cancha_id: cancha.id, date: @date, hour: hour), class: "w-full h-full rounded-lg border-2 border-dashed border-border dark:border-border-dark flex items-center justify-center text-text-secondary dark:text-text-secondary-dark hover:bg-primary/5 dark:hover:bg-primary-dark/10 hover:border-primary/50 dark:hover:border-primary-dark/50 hover:text-primary dark:hover:text-primary-dark transition-colors text-sm text-center px-4" do %>

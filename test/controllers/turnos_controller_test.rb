@@ -207,6 +207,36 @@ class TurnosControllerTest < ActionDispatch::IntegrationTest
     assert_select "p", text: /Sin pagos registrados/
   end
 
+  test "show displays Registrar pago button when turno is not paid (AC1)" do
+    sign_in_as(@user)
+    turno = Turno.create!(cancha: @cancha, start_time: Time.current, reservation_name: "Marcela", payment_status: :pending)
+
+    get turno_path(turno)
+
+    assert_response :success
+    assert_select "summary", text: /Registrar pago/
+  end
+
+  test "show does not display Registrar pago button when turno is paid (AC8)" do
+    sign_in_as(@user)
+    turno = Turno.create!(cancha: @cancha, start_time: Time.current, reservation_name: "Marcela", payment_status: :paid)
+
+    get turno_path(turno)
+
+    assert_response :success
+    assert_select "summary", text: /Registrar pago/, count: 0
+  end
+
+  test "show displays price when turno has a price set" do
+    sign_in_as(@user)
+    turno = Turno.create!(cancha: @cancha, start_time: Time.current, reservation_name: "Marcela", price: 15_000)
+
+    get turno_path(turno)
+
+    assert_response :success
+    assert_select "body", text: /\$15\.000/
+  end
+
   test "cancel marks turno as cancelled and redirects to calendario with notice" do
     sign_in_as(@user)
     # Ensure start_time is in the future

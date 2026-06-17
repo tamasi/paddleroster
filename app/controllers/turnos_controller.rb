@@ -69,6 +69,18 @@ class TurnosController < ApplicationController
     end
 
     if @turno.update(turno_params)
+      # Recalcular payment_status si el precio cambió
+      if @turno.saved_change_to_price?
+        new_total = @turno.total_paid.round(2)
+        new_status = if @turno.price.present?
+          new_total >= @turno.price.round(2) ? :paid : :partial
+        else
+          # Si el precio se borra, mantenemos el estado actual a menos que sea pendiente sin pagos
+          @turno.total_paid > 0 ? :partial : :pending
+        end
+        @turno.update!(payment_status: new_status)
+      end
+
       redirect_to turno_path(@turno), notice: "Turno actualizado correctamente."
     else
       @roster_empty = @turno.roster_entries.empty?
@@ -122,7 +134,7 @@ class TurnosController < ApplicationController
   end
 
   def turno_params
-    attrs = [ :reservation_name, roster_entries_attributes: [ :id, :name, :position, :_destroy ] ]
+    attrs = [ :reservation_name, :price, roster_entries_attributes: [ :id, :name, :position, :_destroy ] ]
     attrs.unshift(:recurring) if action_name == "create" && policy(Turno).mark_recurring?
     params.require(:turno).permit(*attrs)
   end

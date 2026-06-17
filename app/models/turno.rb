@@ -17,5 +17,6 @@ class Turno < ApplicationRecord
 
   validates :start_time, presence: true
   validates :reservation_name, presence: true
+  validates :price, numericality: { greater_than: 0, allow_nil: true }
   validates :start_time, uniqueness: { scope: :cancha_id, conditions: -> { where.not(status: :cancelled) }, message: "ya tiene un turno reservado en este horario" }
 end
