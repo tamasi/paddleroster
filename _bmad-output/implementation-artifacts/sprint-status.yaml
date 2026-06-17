@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-11
-last_updated: 2026-06-17 # stories 5.1 & 5.2 implementadas (bot de WhatsApp)
+last_updated: 2026-06-17 # story 3.1 implementada (visualización del estado de pago)
 project: retroai
 project_key: NOKEY
 tracking_system: file-system
@@ -59,8 +59,8 @@ development_status:
   2-5-inicio-resumen-del-dia: done
   epic-2-retrospective: optional
 
-  epic-3: backlog
-  3-1-visualizacion-del-estado-de-pago: backlog
+  epic-3: in-progress
+  3-1-visualizacion-del-estado-de-pago: done
   3-2-registro-de-pago: backlog
   epic-3-retrospective: optional
 

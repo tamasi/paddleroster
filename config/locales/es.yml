@@ -44,3 +44,20 @@ es:
     - octubre
     - noviembre
     - diciembre
+  number:
+    format:
+      separator: ","
+      delimiter: "."
+      precision: 0
+    currency:
+      format:
+        unit: "$"
+        precision: 0
+        separator: ","
+        delimiter: "."
+        format: "%u%n"
+  errors:
+    messages:
+      blank: "no puede estar en blanco"
+      not_a_number: "no es un número"
+      greater_than: "debe ser mayor que %{count}"

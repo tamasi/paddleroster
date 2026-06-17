@@ -24,4 +24,34 @@ class CardTurnoComponentTest < ViewComponent::TestCase
 
     assert_selector "p", text: "2 jugadores cargados"
   end
+
+  test "shows amount paid alongside status-pill when payment is partial" do
+    cancha = canchas(:one)
+    turno = Turno.create!(start_time: Time.current.change(hour: 20), cancha: cancha, payment_status: :partial, reservation_name: "Marcela")
+    turno.payments.create!(amount: 5000, paid_at: Time.current)
+
+    render_inline(CardTurnoComponent.new(turno: turno))
+
+    assert_selector "span", text: /Pago Parcial/i
+    assert_text "$5.000"
+  end
+
+  test "does not show amount when payment is pending" do
+    cancha = canchas(:one)
+    turno = Turno.create!(start_time: Time.current.change(hour: 21), cancha: cancha, payment_status: :pending, reservation_name: "Marcela")
+
+    render_inline(CardTurnoComponent.new(turno: turno))
+
+    assert_no_text "$"
+  end
+
+  test "does not show amount when payment is paid" do
+    cancha = canchas(:one)
+    turno = Turno.create!(start_time: Time.current.change(hour: 22), cancha: cancha, payment_status: :paid, reservation_name: "Marcela")
+    turno.payments.create!(amount: 10000, paid_at: Time.current)
+
+    render_inline(CardTurnoComponent.new(turno: turno))
+
+    assert_no_text "$"
+  end
 end

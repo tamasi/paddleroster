@@ -18,7 +18,12 @@
   </div>
 
   <div class="mt-auto flex items-center justify-between border-t border-border dark:border-border-dark pt-3">
-    <%= render StatusPillComponent.new(status: @turno.payment_status) %>
+    <div class="flex items-center gap-2">
+      <%= render StatusPillComponent.new(status: @turno.payment_status) %>
+      <% if @turno.partial? %>
+        <span class="text-sm font-medium text-text-secondary dark:text-text-secondary-dark"><%= format_amount(@turno.total_paid) %></span>
+      <% end %>
+    </div>
 
     <%# En futuras historias, si hay botón de acción primario, irá aquí %>
   </div>

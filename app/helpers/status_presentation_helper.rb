@@ -1,4 +1,9 @@
 module StatusPresentationHelper
+  def format_amount(amount)
+    return "" if amount.blank?
+    number_to_currency(amount, unit: "$", precision: 0, delimiter: ".")
+  end
+
   def humanize_payment_status(status)
     case status.to_s
     when "pending" then "Pago Pendiente"

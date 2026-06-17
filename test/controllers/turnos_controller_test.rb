@@ -161,6 +161,52 @@ class TurnosControllerTest < ActionDispatch::IntegrationTest
     assert_select "p", text: /Todavía no cargaste el roster/, count: 0
   end
 
+  test "show displays amount paid alongside status-pill when payment is partial (AC2)" do
+    sign_in_as(@user)
+    turno = Turno.create!(cancha: @cancha, start_time: Time.current, reservation_name: "Marcela", payment_status: :partial)
+    turno.payments.create!(amount: 5000, paid_at: Time.current)
+
+    get turno_path(turno)
+
+    assert_response :success
+    assert_select "span", text: /Pago Parcial/i
+    assert_select "body", text: /\$5\.000/
+  end
+
+  test "show does not display amount when payment is pending or paid" do
+    sign_in_as(@user)
+    turno = Turno.create!(cancha: @cancha, start_time: Time.current, reservation_name: "Marcela", payment_status: :pending)
+
+    get turno_path(turno)
+
+    assert_response :success
+    assert_select "body", text: /\$/, count: 0
+  end
+
+  test "show displays payment history with amount, fecha and quien lo registro (AC4)" do
+    sign_in_as(@user)
+    turno = Turno.create!(cancha: @cancha, start_time: Time.current, reservation_name: "Marcela", payment_status: :partial)
+    turno.payments.create!(amount: 3000, paid_at: Date.new(2026, 6, 10), registered_by: @user)
+    turno.payments.create!(amount: 2000, paid_at: Date.new(2026, 6, 12))
+
+    get turno_path(turno)
+
+    assert_response :success
+    assert_select "body", text: /\$3\.000/
+    assert_select "body", text: /\$2\.000/
+    assert_select "body", text: /#{@user.email_address}/
+  end
+
+  test "show displays 'Sin pagos registrados' when turno has no payments (AC4)" do
+    sign_in_as(@user)
+    turno = Turno.create!(cancha: @cancha, start_time: Time.current, reservation_name: "Marcela")
+
+    get turno_path(turno)
+
+    assert_response :success
+    assert_select "p", text: /Sin pagos registrados/
+  end
+
   test "cancel marks turno as cancelled and redirects to calendario with notice" do
     sign_in_as(@user)
     # Ensure start_time is in the future
