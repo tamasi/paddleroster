@@ -126,7 +126,9 @@ class WhatsappInboxProcessorTest < ActiveSupport::TestCase
 
   test "a pending confirmation phone sending a TURNO command is processed as turno creation, not confirmation" do
     phone = "+5491100009911"
-    existing_turno = Turno.create!(cancha: canchas(:one), start_time: 1.day.from_now.change(min: 0), reservation_name: "Test", origin: :bot, status: :active)
+    # cancha distinta a la de valid_turno_body ("Cancha de Padel 1"): la unicidad de start_time
+    # es por cancha, así que evita una colisión espuria si el test corre justo a las 18hs.
+    existing_turno = Turno.create!(cancha: canchas(:two), start_time: 1.day.from_now.change(min: 0), reservation_name: "Test", origin: :bot, status: :active)
     player = Player.create!(name: "Capitan Pendiente", phone: phone)
     entry = existing_turno.roster_entries.create!(player: player, name: player.name, role: :titular, confirmation_status: :pending, position: 0)
 
