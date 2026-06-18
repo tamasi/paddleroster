@@ -3,16 +3,17 @@
 class StatusPillComponent < ViewComponent::Base
   include StatusPresentationHelper
 
-  def initialize(status:, context: :payment)
+  def initialize(status:, context: :payment, entry: nil)
     @status  = status.to_s
     @context = context
+    @entry   = entry
   end
 
   def wrapper_classes
-    case @status
+    case visual_status
     when "paid", "confirmed"
       "bg-paid-bg dark:bg-paid-bg-dark text-paid-fg dark:text-paid-fg-dark"
-    when "partial", "replacement"
+    when "partial", "replacement", "offered"
       "bg-partial-bg dark:bg-partial-bg-dark text-partial-fg dark:text-partial-fg-dark"
     when "pending"
       "bg-pending-bg dark:bg-pending-bg-dark text-pending-fg dark:text-pending-fg-dark"
@@ -24,10 +25,10 @@ class StatusPillComponent < ViewComponent::Base
   end
 
   def icon_classes
-    case @status
+    case visual_status
     when "paid", "confirmed"
       "text-success dark:text-success-dark"
-    when "partial", "replacement"
+    when "partial", "replacement", "offered"
       "text-warning dark:text-warning-dark"
     when "pending"
       "text-accent dark:text-accent-dark"
@@ -40,11 +41,17 @@ class StatusPillComponent < ViewComponent::Base
 
   def label
     if @context == :roster
-      humanize_confirmation_status(@status)
+      humanize_confirmation_status(@entry || @status)
     elsif Turno.statuses.keys.include?(@status)
       humanize_turno_status(@status)
     else
       humanize_payment_status(@status)
     end
+  end
+
+  private
+
+  def visual_status
+    @entry&.offered? ? "offered" : @status
   end
 end

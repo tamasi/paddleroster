@@ -17,11 +17,9 @@ class BotConfirmationService
 
     case @body
     when CONFIRM_RE
-      entry.update!(confirmation_status: :confirmed)
-      Result.new(handled?: true, reply_text: confirmed_message(entry), roster_entry: entry)
+      handle_confirm(entry)
     when DECLINE_RE
-      entry.update!(confirmation_status: :uncovered)
-      Result.new(handled?: true, reply_text: declined_message(entry), roster_entry: entry)
+      handle_decline(entry)
     else
       Result.new(handled?: true, reply_text: ambiguous_message(entry), roster_entry: nil)
     end
@@ -29,9 +27,29 @@ class BotConfirmationService
 
   private
 
+  def handle_confirm(entry)
+    if entry.suplente?
+      entry.update!(confirmation_status: :replacement)
+      notify_captain_success(entry)
+    else
+      entry.update!(confirmation_status: :confirmed)
+    end
+    Result.new(handled?: true, reply_text: confirmed_message(entry), roster_entry: entry)
+  end
+
+  def handle_decline(entry)
+    entry.update!(confirmation_status: :uncovered)
+    RosterReplacementService.new(entry).call
+    Result.new(handled?: true, reply_text: declined_message(entry), roster_entry: entry)
+  end
+
   def pending_entry
     RosterEntry.joins(:player, :turno)
-               .where(players: { phone: @phone }, role: :titular, confirmation_status: :pending)
+               .where(players: { phone: @phone }, confirmation_status: :pending)
+               .where(
+                 "(roster_entries.role = :titular) OR (roster_entries.role = :suplente AND roster_entries.offered_at IS NOT NULL)",
+                 titular: RosterEntry.roles[:titular], suplente: RosterEntry.roles[:suplente]
+               )
                .merge(Turno.active.bot)
                .where("turnos.start_time >= ?", Time.current)
                .order("turnos.start_time ASC, roster_entries.id ASC")
@@ -43,8 +61,21 @@ class BotConfirmationService
   end
 
   def declined_message(entry)
-    "👍 Entendido, marcamos tu lugar como liberado para el Turno del #{format_turno(entry.turno)}. " \
-      "Avisaremos si conseguimos un reemplazo."
+    if entry.suplente?
+      "👍 Entendido, gracias por responder. Le ofreceremos el lugar al siguiente suplente para el Turno del #{format_turno(entry.turno)}."
+    else
+      "👍 Entendido, marcamos tu lugar como liberado para el Turno del #{format_turno(entry.turno)}. " \
+        "Avisaremos si conseguimos un reemplazo."
+    end
+  end
+
+  def notify_captain_success(entry)
+    captain_phone = entry.turno.roster_entries.order(:position).first&.player&.phone
+    return if captain_phone.blank?
+
+    text = "✅ ¡Lugar cubierto! #{entry.name} confirmó su asistencia para el Turno de las #{entry.turno.start_time.strftime('%H:%M')}.\n" \
+      "El roster ya está actualizado en el Panel."
+    WhatsappOutboxMessage.create!(phone: captain_phone, body: text, status: "pending")
   end
 
   def ambiguous_message(entry)

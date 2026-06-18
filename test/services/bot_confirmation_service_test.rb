@@ -7,9 +7,9 @@ class BotConfirmationServiceTest < ActiveSupport::TestCase
     Turno.create!(cancha: canchas(:one), start_time: start_time, reservation_name: "Test", origin: origin, status: status)
   end
 
-  def create_entry(turno:, phone:, role: :titular, confirmation_status: :pending, name: "Jugador")
+  def create_entry(turno:, phone:, role: :titular, confirmation_status: :pending, name: "Jugador", offered_at: nil)
     player = Player.find_or_create_by!(phone: phone) { |p| p.name = name }
-    turno.roster_entries.create!(player: player, name: name, role: role, confirmation_status: confirmation_status, position: turno.roster_entries.count)
+    turno.roster_entries.create!(player: player, name: name, role: role, confirmation_status: confirmation_status, position: turno.roster_entries.count, offered_at: offered_at)
   end
 
   # ── Respuesta afirmativa (AC2) ────────────────────────────────────────────────
@@ -161,6 +161,51 @@ class BotConfirmationServiceTest < ActiveSupport::TestCase
     phone = "+5491100001011"
     turno = create_turno(origin: :manual)
     create_entry(turno: turno, phone: phone)
+
+    result = BotConfirmationService.new(phone, "SI").call
+
+    assert_not result.handled?
+  end
+
+  # ── Suplentes con oferta activa (Story 5.4) ──────────────────────────────────
+
+  test "SI from a suplente with an active offer marks the entry as replacement and notifies the captain" do
+    captain_phone  = "+5491100001013"
+    suplente_phone = "+5491100001014"
+    turno    = create_turno
+    captain  = create_entry(turno: turno, phone: captain_phone, name: "Capitan")
+    suplente = create_entry(turno: turno, phone: suplente_phone, role: :suplente, name: "Suplente Uno", offered_at: 10.minutes.ago)
+
+    result = BotConfirmationService.new(suplente_phone, "SI").call
+
+    assert result.handled?
+    assert suplente.reload.replacement?
+    assert_equal suplente, result.roster_entry
+
+    captain_msg = WhatsappOutboxMessage.where(phone: captain.player.phone).last
+    assert_includes captain_msg.body, "cubierto"
+    assert_includes captain_msg.body, "Suplente Uno"
+  end
+
+  test "NO from a suplente with an active offer marks it uncovered and triggers the replacement flow" do
+    captain_phone   = "+5491100001015"
+    suplente1_phone = "+5491100001016"
+    turno     = create_turno
+    create_entry(turno: turno, phone: captain_phone, name: "Capitan")
+    suplente1 = create_entry(turno: turno, phone: suplente1_phone, role: :suplente, name: "Suplente Uno", offered_at: 10.minutes.ago)
+    suplente2 = create_entry(turno: turno, phone: "+5491100001017", role: :suplente, name: "Suplente Dos")
+
+    result = BotConfirmationService.new(suplente1_phone, "NO").call
+
+    assert result.handled?
+    assert suplente1.reload.uncovered?
+    assert suplente2.reload.offered_at.present?, "debe ofrecerse el cupo al siguiente suplente"
+  end
+
+  test "SI from a suplente without an active offer is ignored (handled? false)" do
+    phone = "+5491100001018"
+    turno = create_turno
+    create_entry(turno: turno, phone: phone, role: :suplente)
 
     result = BotConfirmationService.new(phone, "SI").call
 

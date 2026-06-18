@@ -29,7 +29,10 @@ module StatusPresentationHelper
     end
   end
 
-  def humanize_confirmation_status(status)
+  def humanize_confirmation_status(status_or_entry)
+    return "Ofrecido" if status_or_entry.respond_to?(:offered?) && status_or_entry.offered?
+
+    status = status_or_entry.respond_to?(:confirmation_status) ? status_or_entry.confirmation_status : status_or_entry
     case status.to_s
     when "pending"     then "Pendiente"
     when "confirmed"   then "Confirmado"

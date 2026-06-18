@@ -15,7 +15,7 @@
             <% end %>
           </div>
           <% if turno.bot? %>
-            <%= render StatusPillComponent.new(status: entry.confirmation_status, context: :roster) %>
+            <%= render StatusPillComponent.new(status: entry.confirmation_status, context: :roster, entry: entry) %>
           <% end %>
         </div>
       <% end %>

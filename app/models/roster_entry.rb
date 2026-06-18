@@ -8,4 +8,8 @@ class RosterEntry < ApplicationRecord
   enum :confirmation_status, { pending: 0, confirmed: 1, replacement: 2, uncovered: 3 }
 
   validates :name, presence: true
+
+  def offered?
+    pending? && offered_at.present?
+  end
 end

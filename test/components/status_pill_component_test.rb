@@ -21,4 +21,20 @@ class StatusPillComponentTest < ViewComponent::TestCase
     assert_selector "span", text: /Pago Parcial/i
     assert_selector ".bg-partial-bg"
   end
+
+  test "renders Ofrecido for a roster entry that was offered the replacement slot" do
+    entry = RosterEntry.new(confirmation_status: "pending", offered_at: 5.minutes.ago)
+    render_inline(StatusPillComponent.new(status: entry.confirmation_status, context: :roster, entry: entry))
+
+    assert_selector "span", text: /Ofrecido/i
+    assert_selector ".bg-partial-bg"
+  end
+
+  test "renders Pendiente for a roster entry that was not yet offered" do
+    entry = RosterEntry.new(confirmation_status: "pending")
+    render_inline(StatusPillComponent.new(status: entry.confirmation_status, context: :roster, entry: entry))
+
+    assert_selector "span", text: /Pendiente/i
+    assert_selector ".bg-pending-bg"
+  end
 end
