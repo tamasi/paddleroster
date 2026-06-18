@@ -37,22 +37,21 @@ class BotTurnoCreationService
     current_section  = :header
 
     lines.each do |line|
-      key, val = line.split(":", 2)
-
-      case key.strip.downcase
-      when "cancha"
-        @cancha_name = val&.strip
+      # Detección robusta de sección (case-insensitive, ignora espacios extras)
+      lower_line = line.downcase
+      if lower_line.start_with?("cancha:")
+        @cancha_name = line.split(":", 2).last&.strip
         next
-      when "fecha"
-        @fecha_str = val&.strip
+      elsif lower_line.start_with?("fecha:")
+        @fecha_str = line.split(":", 2).last&.strip
         next
-      when "horario"
-        @horario_str = val&.strip
+      elsif lower_line.start_with?("horario:")
+        @horario_str = line.split(":", 2).last&.strip
         next
-      when "jugadores"
+      elsif lower_line.start_with?("jugadores:")
         current_section = :titulares
         next
-      when "suplentes"
+      elsif lower_line.start_with?("suplentes:")
         current_section = :suplentes
         next
       end
@@ -99,7 +98,15 @@ class BotTurnoCreationService
       return
     end
 
-    hour = @horario_str.split(":").first.to_i
+    h_str, m_str = @horario_str.split(":")
+    hour = h_str.to_i
+    min  = m_str.to_i
+
+    if min != 0
+      @errors << "Solo se permiten turnos en la hora exacta (ej: #{hour}:00)"
+      return
+    end
+
     unless Complejo::HORARIO_OPERATIVO.include?(hour)
       @errors << "El horario #{@horario_str} está fuera del horario operativo " \
                  "(#{Complejo::HORARIO_OPERATIVO.first}:00 — #{Complejo::HORARIO_OPERATIVO.last}:00)"
@@ -124,7 +131,7 @@ class BotTurnoCreationService
   def create_turno
     ActiveRecord::Base.transaction do
       h, m       = @horario_str.split(":").map(&:to_i)
-      start_time = @date.to_time.change(hour: h, min: m, sec: 0)
+      start_time = Time.zone.local(@date.year, @date.month, @date.day, h, m, 0)
 
       turno = Turno.new(
         cancha:           @cancha,
@@ -144,6 +151,9 @@ class BotTurnoCreationService
     nil
   rescue ActiveRecord::RecordNotUnique
     @errors << "Ya existe un turno en esa cancha y horario"
+    nil
+  rescue StandardError => e
+    @errors << "Error inesperado al crear el turno: #{e.message}"
     nil
   end
 

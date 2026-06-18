@@ -50,3 +50,7 @@
 - MVC Violation via Params: invitations/show.html.erb directly accesses params[:token] in form URL
 - Hardcoded String Debt: User-facing text is hardcoded instead of using I18n
 - Opaque Invitation UX: "Invitar empleado" button fires POST without collecting email
+
+## Deferred from: code review of 5-2-creacion-de-turno-y-roster-inicial-via-bot-fr-1.md (2026-06-17)
+- Architectural Coupling: Node.js accede directamente a la DB de Rails [whatsapp-service/src/db.ts] — deferred, pre-existing
+- Falta de Rate Limiting en el Bot [app/services/whatsapp_inbox_processor.rb] — deferred, pre-existing (fuera de alcance MVP)

@@ -3,7 +3,7 @@ story_id: "5.2"
 story_key: "5-2-creacion-de-turno-y-roster-inicial-via-bot-fr-1"
 epic_id: "5"
 title: "Creación de Turno y Roster inicial vía Bot (FR-1)"
-status: "review"
+status: "done"
 last_updated: "2026-06-17"
 baseline_commit: a47585d5335f49801cf8a7dff6ec86bf509f5975
 ---
@@ -548,11 +548,32 @@ one:
 - Tests de validaciones: usar `assert msg.errors[:field].present?` en lugar de `assert_includes errors, "can't be blank"` (locale es `:es`)
 - Rubocop NO debe correr sobre archivos `.yml` ni `.erb`
 - Test baseline: 193 tests / 590 assertions
-- `# frozen_string_literal: true` en todos los archivos `.rb` nuevos
+- `frozen_string_literal: true` en todos los archivos `.rb` nuevos
+
+---
+
+## Review Findings
+
+### Decision Needed
+- [x] [Review][Decision] Manejo de Errores Irrecuperables — ¿Deseas que el Bot responda con un mensaje técnico o un mensaje genérico de "Error interno" cuando ocurre una excepción no controlada en Rails? Actualmente se rescata StandardError y se marca como procesado sin notificar al usuario. (Resuelto: Mensaje Genérico)
+
+### Patches
+- [x] [Review][Patch] Falta validación de hora exacta (:00) [app/services/bot_turno_creation_service.rb:101]
+- [x] [Review][Patch] Ambigüedad de Zona Horaria en creación de Turnos [app/services/bot_turno_creation_service.rb:125]
+- [x] [Review][Patch] Suplantación de identidad "SYSTEM" [app/services/whatsapp_inbox_processor.rb:10]
+- [x] [Review][Patch] Superposición en el Poller de Salida [whatsapp-service/src/outbox-poller.ts:25]
+- [x] [Review][Patch] Fallo silencioso en creación de jugadores malformados [app/services/bot_turno_creation_service.rb:135]
+- [x] [Review][Patch] Falta de Timeouts en llamadas externas (Telegram) [app/jobs/send_whatsapp_alert_job.rb]
+- [x] [Review][Patch] Brittle Parsing: Dependencia de orden de líneas en el cuerpo del mensaje [app/services/bot_turno_creation_service.rb:45]
+
+### Deferred
+- [x] [Review][Defer] Architectural Coupling: Node.js accede directamente a la DB de Rails [whatsapp-service/src/db.ts] — deferred, pre-existing
+- [x] [Review][Defer] Falta de Rate Limiting en el Bot [app/services/whatsapp_inbox_processor.rb] — deferred, pre-existing (fuera de alcance MVP)
 
 ---
 
 ## Dev Agent Record
+
 
 ### Implementation Plan
 Implementado según Dev Notes: migraciones + modelos `Player`/`ComplexPlayer`, `belongs_to :player, optional: true` en `RosterEntry`, servicios `WhatsappInboxProcessor` (router, incluye manejo de `SYSTEM`/`BOT_DISCONNECTED`) y `BotTurnoCreationService` (parseo, validación, creación de Turno+Roster+Player/ComplexPlayer), refactor de `ProcessWhatsappInboxJob` para delegar al processor, y badge de `confirmation_status` en `show.html.erb` para turnos `origin: :bot`.

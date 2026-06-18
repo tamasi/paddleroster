@@ -10,6 +10,8 @@ class WhatsappInboxProcessor
   end
 
   def process
+    # Solo el sistema puede enviar mensajes con teléfono "SYSTEM"
+    # Los mensajes de usuarios siempre vienen con su teléfono real
     return handle_system_alert if @phone == "SYSTEM"
 
     if @body.match?(TURNO_COMMAND)
@@ -17,6 +19,11 @@ class WhatsappInboxProcessor
     else
       handle_unknown_message
     end
+  rescue StandardError => e
+    # Decisión: Mensaje genérico para errores inesperados
+    reply("❌ Ocurrió un error interno. Por favor, intenta más tarde o contacta al soporte.")
+    # Opcional: Loguear el error real para debugging
+    Rails.logger.error("[WhatsappInboxProcessor] Error: #{e.message}\n#{e.backtrace.join("\n")}")
   end
 
   private

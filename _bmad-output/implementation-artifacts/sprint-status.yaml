@@ -70,7 +70,7 @@ development_status:
 
   epic-5: in-progress
   5-1-infraestructura-del-bot-de-whatsapp: done
-  5-2-creacion-de-turno-y-roster-inicial-via-bot-fr-1: review
+  5-2-creacion-de-turno-y-roster-inicial-via-bot-fr-1: done
   5-3-confirmacion-individual-de-asistencia-fr-2: backlog
   5-4-reemplazo-auto-gestionado-de-suplentes-fr-3: backlog
   epic-5-retrospective: optional
