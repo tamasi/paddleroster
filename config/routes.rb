@@ -14,7 +14,7 @@ Rails.application.routes.draw do
   get "reportes", to: "reports#index", as: :reportes
 
   resource :configuracion, controller: :configuracion, only: %i[ show edit update ] do
-    resources :canchas
+    resources :canchas, except: %i[ index show ]
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

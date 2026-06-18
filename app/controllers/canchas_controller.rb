@@ -1,13 +1,8 @@
 class CanchasController < ApplicationController
   before_action :set_complejo
-  before_action :set_cancha, only: %i[ show edit update destroy ]
+  before_action :set_cancha, only: %i[ edit update destroy ]
 
   rescue_from ActiveRecord::RecordNotFound, with: :cancha_not_found
-
-  def index
-    authorize Cancha
-    @canchas = @complejo.canchas
-  end
 
   def new
     authorize Cancha

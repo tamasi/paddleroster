@@ -1,12 +1,4 @@
 class CanchaPolicy < ApplicationPolicy
-  def index?
-    user.owner?
-  end
-
-  def show?
-    user.owner?
-  end
-
   def create?
     user.owner?
   end

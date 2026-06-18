@@ -7,12 +7,6 @@ class CanchasControllerTest < ActionDispatch::IntegrationTest
     @cancha = canchas(:one)
   end
 
-  test "should get index" do
-    sign_in_as @owner
-    get configuracion_canchas_url
-    assert_response :success
-  end
-
   test "should create cancha" do
     sign_in_as @owner
     assert_difference("Cancha.count") do
