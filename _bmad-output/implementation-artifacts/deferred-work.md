@@ -54,3 +54,11 @@
 ## Deferred from: code review of 5-2-creacion-de-turno-y-roster-inicial-via-bot-fr-1.md (2026-06-17)
 - Architectural Coupling: Node.js accede directamente a la DB de Rails [whatsapp-service/src/db.ts] — deferred, pre-existing
 - Falta de Rate Limiting en el Bot [app/services/whatsapp_inbox_processor.rb] — deferred, pre-existing (fuera de alcance MVP)
+
+## Deferred from: code review of 5-3-confirmacion-individual-de-asistencia-fr-2.md (2026-06-18)
+- Sin disparo automático del flujo de reemplazo a Suplentes cuando una `RosterEntry` pasa a `uncovered` [app/services/bot_confirmation_service.rb] — deferred, pre-existing (por diseño: es exactamente el alcance de Story 5.4).
+- Límite de borde "Turno activo pero ya en curso" (start_time pasado, partido sin terminar) sin test explícito [app/services/bot_confirmation_service.rb:32-39] — deferred, pre-existing (hereda el patrón `Turno.active`/`start_time` ya usado en historias previas).
+- Sin batching/background job para rosters grandes — los outbox messages de confirmación se crean sincrónicamente dentro del manejo del webhook [app/services/whatsapp_inbox_processor.rb:61-65] — deferred, pre-existing (mismo patrón síncrono que `BotTurnoCreationService`).
+- `RosterEntry` con `player_id` anulado (Player borrado) cae a mensaje de ayuda genérico en vez de uno específico [app/services/bot_confirmation_service.rb:32-39] — deferred, pre-existing (escenario raro, fallback ya es seguro).
+- Dependencia implícita de normalización E.164 del teléfono entrante para el join con `Player#phone` [app/services/bot_confirmation_service.rb:32-39] — deferred, pre-existing (establecido desde Story 5.1/5.2).
+- `CONFIRM_RE`/`DECLINE_RE` no toleran puntuación/espacios extra (ej. "SI!", "no.") [app/services/bot_confirmation_service.rb:6-7] — deferred, pre-existing (cae de forma controlada a la rama ambigua, mismo estilo estricto de parseo que el resto del bot).

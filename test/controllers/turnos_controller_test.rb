@@ -161,6 +161,18 @@ class TurnosControllerTest < ActionDispatch::IntegrationTest
     assert_select "p", text: /Todavía no cargaste el roster/, count: 0
   end
 
+  test "show renders confirmation_status status-pill per roster row for a bot turno (Story 5.3)" do
+    sign_in_as(@user)
+    turno = Turno.create!(cancha: @cancha, start_time: Time.current, reservation_name: "Marcela", origin: :bot)
+    player = Player.create!(name: "Juan", phone: "+5491100002001")
+    turno.roster_entries.create!(player: player, name: "Juan", role: :titular, confirmation_status: :confirmed, position: 0)
+
+    get turno_path(turno)
+
+    assert_response :success
+    assert_select "span", text: /Confirmado/i
+  end
+
   test "show displays amount paid alongside status-pill when payment is partial (AC2)" do
     sign_in_as(@user)
     turno = Turno.create!(cancha: @cancha, start_time: Time.current, reservation_name: "Marcela", payment_status: :partial)

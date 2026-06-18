@@ -1,5 +1,6 @@
 <% content_for :page_title, "Detalle de Turno" %>
 <%= turbo_stream_from "complex_#{@turno.cancha.complejo_id}_payments" %>
+<%= turbo_stream_from "turno_#{@turno.id}_roster" %>
 
 <div class="mx-auto md:w-2/3 w-full px-4">
   <%= link_to "Volver", calendario_path(date: @turno.start_time.to_date), class: "text-blue-600 hover:text-blue-500 font-medium mb-4 inline-block" %>
@@ -59,30 +60,7 @@
       </div>
     <% end %>
   <% else %>
-    <div class="mt-8">
-      <h2 class="text-sm font-bold uppercase tracking-wide text-text-secondary dark:text-text-secondary-dark mb-2">
-        Roster (Solo lectura)
-      </h2>
-      <div class="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark rounded-lg p-4 space-y-3">
-        <% if @turno.roster_entries.empty? %>
-          <p class="text-text-secondary dark:text-text-secondary-dark text-sm italic">Sin roster cargado</p>
-        <% else %>
-          <% @turno.roster_entries.each do |entry| %>
-            <div class="py-2 border-b border-border dark:border-border-dark last:border-0 flex items-center justify-between">
-              <div>
-                <span class="text-text-primary dark:text-text-primary-dark font-medium"><%= entry.name %></span>
-                <% if entry.suplente? %>
-                  <span class="ml-1 text-xs text-text-secondary dark:text-text-secondary-dark">(suplente)</span>
-                <% end %>
-              </div>
-              <% if @turno.bot? %>
-                <%= render StatusPillComponent.new(status: entry.confirmation_status, context: :roster) %>
-              <% end %>
-            </div>
-          <% end %>
-        <% end %>
-      </div>
-    </div>
+    <%= render "turnos/roster_section", turno: @turno %>
   <% end %>
 
   <%= render "turnos/payment_history", turno: @turno %>

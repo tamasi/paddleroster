@@ -42,13 +42,37 @@ class WhatsappInboxProcessorTest < ActiveSupport::TestCase
   test "valid TURNO message creates turno and sends success reply" do
     msg = inbox_message(phone: "+5491155550000", raw_body: valid_turno_body)
     assert_difference("Turno.count", 1) do
-      assert_difference("WhatsappOutboxMessage.count", 1) do
+      # +1 por la respuesta "Turno creado", +1 por la solicitud de confirmación al único titular
+      assert_difference("WhatsappOutboxMessage.count", 2) do
         WhatsappInboxProcessor.new(msg).process
       end
     end
-    reply = WhatsappOutboxMessage.last
-    assert_includes reply.body, "✅"
-    assert_equal "+5491155550000", reply.phone
+    success_reply = WhatsappOutboxMessage.where(phone: "+5491155550000").last
+    assert_includes success_reply.body, "✅"
+  end
+
+  test "valid TURNO message sends an individual confirmation request to each titular" do
+    fecha = (Date.current + 1).strftime("%d/%m/%Y")
+    body = <<~MSG
+      TURNO
+      cancha: Cancha de Padel 1
+      fecha: #{fecha}
+      horario: 18:00
+      jugadores:
+      Carlos Nuevo +5491100009901
+      Ana Nueva +5491100009902
+      suplentes:
+      Pedro Suplente +5491100009903
+    MSG
+    msg = inbox_message(phone: "+5491155550010", raw_body: body)
+
+    assert_difference("WhatsappOutboxMessage.count", 3) do
+      WhatsappInboxProcessor.new(msg).process
+    end
+
+    titular_reply = WhatsappOutboxMessage.find_by(phone: "+5491100009901")
+    assert_includes titular_reply.body, "Confirmás"
+    assert_nil WhatsappOutboxMessage.find_by(phone: "+5491100009903"), "el suplente no debe recibir solicitud de confirmación"
   end
 
   test "invalid TURNO message sends error reply" do
@@ -80,5 +104,55 @@ class WhatsappInboxProcessorTest < ActiveSupport::TestCase
     assert_difference("Turno.count", 1) do
       WhatsappInboxProcessor.new(msg).process
     end
+  end
+
+  # ── Confirmación de asistencia (Story 5.3) ──────────────────────────────────
+
+  test "phone with a pending confirmation answering SI updates roster_entry and replies" do
+    phone = "+5491100009910"
+    turno = Turno.create!(cancha: canchas(:one), start_time: 1.day.from_now.change(min: 0), reservation_name: "Test", origin: :bot, status: :active)
+    player = Player.create!(name: "Jugador Pendiente", phone: phone)
+    entry = turno.roster_entries.create!(player: player, name: player.name, role: :titular, confirmation_status: :pending, position: 0)
+
+    msg = inbox_message(phone: phone, raw_body: "SI")
+    assert_difference("WhatsappOutboxMessage.count", 1) do
+      WhatsappInboxProcessor.new(msg).process
+    end
+
+    assert entry.reload.confirmed?
+    reply = WhatsappOutboxMessage.last
+    assert_equal phone, reply.phone
+  end
+
+  test "a pending confirmation phone sending a TURNO command is processed as turno creation, not confirmation" do
+    phone = "+5491100009911"
+    existing_turno = Turno.create!(cancha: canchas(:one), start_time: 1.day.from_now.change(min: 0), reservation_name: "Test", origin: :bot, status: :active)
+    player = Player.create!(name: "Capitan Pendiente", phone: phone)
+    entry = existing_turno.roster_entries.create!(player: player, name: player.name, role: :titular, confirmation_status: :pending, position: 0)
+
+    msg = inbox_message(phone: phone, raw_body: valid_turno_body)
+    assert_difference("Turno.count", 1) do
+      WhatsappInboxProcessor.new(msg).process
+    end
+
+    assert entry.reload.pending?, "la RosterEntry pendiente previa no debe modificarse por el comando TURNO"
+    success_reply = WhatsappOutboxMessage.where(phone: phone).order(:created_at).last
+    assert_includes success_reply.body, "✅"
+  end
+
+  test "send_confirmation_requests tolerates a per-entry failure and still notifies the rest (review finding)" do
+    turno = Turno.create!(cancha: canchas(:one), start_time: 1.day.from_now.change(min: 0), reservation_name: "Test", origin: :bot, status: :active)
+    good_player = Player.create!(name: "Bueno", phone: "+5491100009920")
+    turno.roster_entries.create!(player: good_player, name: good_player.name, role: :titular, confirmation_status: :pending, position: 0)
+    turno.roster_entries.create!(name: "Sin jugador vinculado", role: :titular, confirmation_status: :pending, position: 1)
+
+    msg = inbox_message(phone: "+5491100009921", raw_body: "lo que sea")
+    processor = WhatsappInboxProcessor.new(msg)
+
+    assert_difference("WhatsappOutboxMessage.count", 1) do
+      processor.send(:send_confirmation_requests, turno)
+    end
+
+    assert WhatsappOutboxMessage.exists?(phone: good_player.phone)
   end
 end

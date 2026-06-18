@@ -17,7 +17,7 @@ class WhatsappInboxProcessor
     if @body.match?(TURNO_COMMAND)
       handle_turno_command
     else
-      handle_unknown_message
+      handle_confirmation_or_unknown
     end
   rescue StandardError => e
     # Decisión: Mensaje genérico para errores inesperados
@@ -38,13 +38,60 @@ class WhatsappInboxProcessor
     result = BotTurnoCreationService.new(@phone, @body).call
     if result.success?
       reply(turno_created_message(result.turno))
+      send_confirmation_requests(result.turno)
     else
       reply("❌ No pude crear el turno:\n#{result.errors.join("\n")}")
     end
   end
 
+  def handle_confirmation_or_unknown
+    result = BotConfirmationService.new(@phone, @body).call
+    if result.handled?
+      reply(result.reply_text)
+      broadcast_roster_update(result.roster_entry) if result.roster_entry
+    else
+      handle_unknown_message
+    end
+  end
+
   def handle_unknown_message
     reply(help_message)
+  end
+
+  def send_confirmation_requests(turno)
+    turno.roster_entries.titular.each do |entry|
+      WhatsappOutboxMessage.create!(phone: entry.player.phone, body: confirmation_request_message(turno, entry), status: "pending")
+    rescue StandardError => e
+      Rails.logger.error("[WhatsappInboxProcessor] No se pudo enviar solicitud de confirmación a roster_entry##{entry.id}: #{e.message}")
+    end
+  end
+
+  def confirmation_request_message(turno, entry)
+    fecha   = turno.start_time.strftime("%d/%m/%Y")
+    horario = turno.start_time.strftime("%H:%M")
+    "🏆 ¡Hola #{entry.name}! Te incluyeron en el Roster de un Turno:\n" \
+      "📍 #{turno.cancha.name}, #{fecha} #{horario}\n\n" \
+      "¿Confirmás tu asistencia? Respondé SI o NO."
+  end
+
+  def broadcast_roster_update(entry)
+    turno = entry.turno
+    Turbo::StreamsChannel.broadcast_replace_to(
+      "turno_#{turno.id}_roster",
+      target: "roster-section-#{turno.id}",
+      partial: "turnos/roster_section",
+      locals: { turno: turno }
+    )
+    Turbo::StreamsChannel.broadcast_replace_to(
+      "complex_#{turno.cancha.complejo_id}_payments",
+      target: "card-turno-#{turno.id}",
+      partial: "turnos/card_turno_stream",
+      locals: { turno: turno }
+    )
+  rescue StandardError => e
+    # La confirmación del jugador ya se persistió antes de llegar acá — una falla de
+    # broadcast no debe traducirse en un mensaje de error hacia el jugador.
+    Rails.logger.error("[WhatsappInboxProcessor] Falló el broadcast de roster para turno##{entry.turno_id}: #{e.message}")
   end
 
   def reply(text)

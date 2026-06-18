@@ -25,6 +25,27 @@ class CardTurnoComponentTest < ViewComponent::TestCase
     assert_selector "p", text: "2 jugadores cargados"
   end
 
+  test "bot-origin turno shows X/Y confirmados among titulares" do
+    cancha = canchas(:one)
+    turno = Turno.create!(start_time: Time.current.change(hour: 19), cancha: cancha, reservation_name: "Marcela", origin: :bot)
+    turno.roster_entries.create!(name: "Juan", role: :titular, confirmation_status: :confirmed, position: 0)
+    turno.roster_entries.create!(name: "Pedro", role: :titular, confirmation_status: :pending, position: 1)
+    turno.roster_entries.create!(name: "Suplente", role: :suplente, confirmation_status: :pending, position: 2)
+
+    render_inline(CardTurnoComponent.new(turno: turno))
+
+    assert_selector "p", text: "1/2 confirmados"
+  end
+
+  test "bot-origin turno without roster shows Sin roster cargado" do
+    cancha = canchas(:one)
+    turno = Turno.create!(start_time: Time.current.change(hour: 19), cancha: cancha, reservation_name: "Marcela", origin: :bot)
+
+    render_inline(CardTurnoComponent.new(turno: turno))
+
+    assert_selector "p", text: "Sin roster cargado"
+  end
+
   test "shows amount paid alongside status-pill when payment is partial" do
     cancha = canchas(:one)
     turno = Turno.create!(start_time: Time.current.change(hour: 20), cancha: cancha, payment_status: :partial, reservation_name: "Marcela")

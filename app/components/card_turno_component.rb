@@ -8,6 +8,8 @@ class CardTurnoComponent < ViewComponent::Base
   end
 
   def roster_summary
+    return bot_roster_summary if @turno.bot?
+
     count = @turno.roster_entries.size
     return "Sin roster cargado" if count.zero?
 
@@ -16,5 +18,15 @@ class CardTurnoComponent < ViewComponent::Base
 
   def reservee_name
     @turno.reservation_name.presence || "Sin nombre"
+  end
+
+  private
+
+  def bot_roster_summary
+    titulares = @turno.roster_entries.titular
+    return "Sin roster cargado" if titulares.empty?
+
+    confirmados = titulares.count(&:confirmed?)
+    "#{confirmados}/#{titulares.size} confirmados"
   end
 end
