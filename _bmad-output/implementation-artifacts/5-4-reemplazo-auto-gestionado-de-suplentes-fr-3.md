@@ -3,7 +3,7 @@ story_id: "5.4"
 story_key: "5-4-reemplazo-auto-gestionado-de-suplentes-fr-3"
 epic_id: "5"
 title: "Reemplazo auto-gestionado de suplentes (FR-3)"
-status: "review"
+status: "done"
 last_updated: "2026-06-18"
 baseline_commit: "d1f62b32dbd12a6b63c92e0d94c2f16f62047833"
 ---
@@ -179,3 +179,15 @@ _Vacío_
 ## Change Log
 
 - 2026-06-18: Implementación completa (dev-story workflow). Migración `offered_at` en `roster_entries`; `RosterReplacementService` y `CheckReplacementTimeoutJob` nuevos implementan el motor de reemplazo automático de suplentes (AC1-AC5); `BotConfirmationService` extendido para que los suplentes puedan confirmar/declinar una oferta activa; feedback visual "Ofrecido" en el Panel (`StatusPillComponent` + `StatusPresentationHelper`). Suite completa: 259/259 verde (244 + 15 nuevos), rubocop 0 offenses. Status → `review`.
+
+### Review Findings
+- [x] [Review][Patch] Absence of Past-Turno Validation & Sloppy Cascade — `RosterReplacementService#timeout_duration` doesn't check if the turno has already started. If a vacancy arises near or after start time, it texts backup with a 15 min deadline for a game already playing/finished. Do we stop the cascade, or continue offering?
+- [x] [Review][Patch] User Intent Overlap & Silenced Error Handling in Late Bot Responses — `BotConfirmationService` only looks for `pending`. Late "SI/NO" responses from timed-out candidates get an ambiguous message. Do we want a specific "Too late" message?
+- [x] [Review][Patch] Missing implementation of withdrawal for titular players — AC1 specifies titular player can withdraw previous confirmation. This was deliberately omitted by dev ("Alcance no implementado a propósito").
+- [x] [Review][Patch] Background Job Idempotency & Retry Vulnerability [app/jobs/check_replacement_timeout_job.rb:11]
+- [x] [Review][Patch] Broken Replacement Chain Context & Misleading Notifications [app/services/roster_replacement_service.rb:68]
+- [x] [Review][Patch] Missing Threshold Verification in Timeout Job [app/jobs/check_replacement_timeout_job.rb:9]
+- [x] [Review][Patch] TOCTOU Flaw in Message Generation [app/services/roster_replacement_service.rb:60]
+- [x] [Review][Patch] Missing Case Handling for "uncovered" Status [app/components/status_pill_component.rb:11]
+- [x] [Review][Patch] Candidate player lacks phone stalls replacement [app/services/roster_replacement_service.rb:28]
+- [x] [Review][Defer] Concurrency issue if multiple suplentes offered at same time [app/services/roster_replacement_service.rb:14] — deferred, pre-existing

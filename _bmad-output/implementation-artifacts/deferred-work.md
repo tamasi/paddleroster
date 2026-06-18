@@ -62,3 +62,6 @@
 - `RosterEntry` con `player_id` anulado (Player borrado) cae a mensaje de ayuda genérico en vez de uno específico [app/services/bot_confirmation_service.rb:32-39] — deferred, pre-existing (escenario raro, fallback ya es seguro).
 - Dependencia implícita de normalización E.164 del teléfono entrante para el join con `Player#phone` [app/services/bot_confirmation_service.rb:32-39] — deferred, pre-existing (establecido desde Story 5.1/5.2).
 - `CONFIRM_RE`/`DECLINE_RE` no toleran puntuación/espacios extra (ej. "SI!", "no.") [app/services/bot_confirmation_service.rb:6-7] — deferred, pre-existing (cae de forma controlada a la rama ambigua, mismo estilo estricto de parseo que el resto del bot).
+
+## Deferred from: code review of 5-4-reemplazo-auto-gestionado-de-suplentes-fr-3.md (2026-06-18)
+- Concurrency issue if multiple suplentes offered at same time [app/services/roster_replacement_service.rb:14] — deferred, pre-existing

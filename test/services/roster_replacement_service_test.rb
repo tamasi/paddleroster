@@ -112,6 +112,7 @@ class RosterReplacementServiceTest < ActiveSupport::TestCase
     assert_nil suplente2.reload.offered_at
 
     # Vence el plazo del suplente 1 sin respuesta
+    suplente1.update!(offered_at: 3.hours.ago)
     CheckReplacementTimeoutJob.perform_now(suplente1.id)
     assert suplente1.reload.uncovered?
     assert suplente2.reload.offered_at.present?

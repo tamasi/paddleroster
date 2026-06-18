@@ -12,16 +12,31 @@ class BotConfirmationService
   end
 
   def call
-    entry = pending_entry
-    return Result.new(handled?: false, reply_text: nil, roster_entry: nil) unless entry
+    entry = find_actionable_entry
+
+    unless entry
+      late_entry = find_late_entry
+      if late_entry && (@body.match?(CONFIRM_RE) || @body.match?(DECLINE_RE))
+        return Result.new(handled?: true, reply_text: too_late_message(late_entry))
+      end
+      return Result.new(handled?: false) # Nothing to do for this phone number
+    end
 
     case @body
     when CONFIRM_RE
-      handle_confirm(entry)
+      if entry.pending? && (entry.titular? || entry.offered_at.present?)
+        handle_confirm(entry)
+      else
+        Result.new(handled?: true, reply_text: already_confirmed_message(entry))
+      end
     when DECLINE_RE
-      handle_decline(entry)
+      if (entry.pending? && (entry.titular? || entry.offered_at.present?)) || (entry.titular? && entry.confirmed?)
+        handle_decline(entry)
+      else
+        Result.new(handled?: true, reply_text: ambiguous_message(entry))
+      end
     else
-      Result.new(handled?: true, reply_text: ambiguous_message(entry), roster_entry: nil)
+      Result.new(handled?: true, reply_text: ambiguous_message(entry))
     end
   end
 
@@ -43,17 +58,39 @@ class BotConfirmationService
     Result.new(handled?: true, reply_text: declined_message(entry), roster_entry: entry)
   end
 
-  def pending_entry
+  def find_actionable_entry
     RosterEntry.joins(:player, :turno)
-               .where(players: { phone: @phone }, confirmation_status: :pending)
+               .where(players: { phone: @phone })
                .where(
-                 "(roster_entries.role = :titular) OR (roster_entries.role = :suplente AND roster_entries.offered_at IS NOT NULL)",
-                 titular: RosterEntry.roles[:titular], suplente: RosterEntry.roles[:suplente]
+                 "(roster_entries.role = :titular AND roster_entries.confirmation_status IN (:pending, :confirmed)) OR " \
+                 "(roster_entries.role = :suplente AND roster_entries.confirmation_status = :pending AND roster_entries.offered_at IS NOT NULL)",
+                 titular: RosterEntry.roles[:titular],
+                 suplente: RosterEntry.roles[:suplente],
+                 pending: RosterEntry.confirmation_statuses[:pending],
+                 confirmed: RosterEntry.confirmation_statuses[:confirmed]
                )
                .merge(Turno.active.bot)
                .where("turnos.start_time >= ?", Time.current)
                .order("turnos.start_time ASC, roster_entries.id ASC")
                .first
+  end
+
+  def find_late_entry
+    RosterEntry.joins(:player, :turno)
+               .where(players: { phone: @phone }, confirmation_status: :uncovered)
+               .where.not(offered_at: nil)
+               .merge(Turno.active.bot)
+               .where("turnos.start_time >= ?", Time.current)
+               .order("turnos.start_time ASC, roster_entries.id ASC")
+               .first
+  end
+
+  def too_late_message(entry)
+    "Gracias por responder para el Turno del #{format_turno(entry.turno)}, pero el cupo ya se ofreció a otro suplente. ¡La próxima será!"
+  end
+
+  def already_confirmed_message(entry)
+    "Ya habías confirmado tu asistencia para el Turno del #{format_turno(entry.turno)}. Si no podés ir, respondé NO."
   end
 
   def confirmed_message(entry)

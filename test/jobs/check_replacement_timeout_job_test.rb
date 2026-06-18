@@ -20,7 +20,7 @@ class CheckReplacementTimeoutJobTest < ActiveSupport::TestCase
   test "marks the entry as uncovered and re-triggers RosterReplacementService when the offer expired" do
     turno     = create_turno
     create_entry(turno: turno, role: :titular, position: 0, phone: "+5491100003001", name: "Capitan")
-    suplente1 = create_entry(turno: turno, role: :suplente, position: 1, phone: "+5491100003002", name: "Suplente Uno", offered_at: 20.minutes.ago)
+    suplente1 = create_entry(turno: turno, role: :suplente, position: 1, phone: "+5491100003002", name: "Suplente Uno", offered_at: 3.hours.ago)
     suplente2 = create_entry(turno: turno, role: :suplente, position: 2, phone: "+5491100003003", name: "Suplente Dos")
 
     CheckReplacementTimeoutJob.perform_now(suplente1.id)
@@ -55,5 +55,15 @@ class CheckReplacementTimeoutJobTest < ActiveSupport::TestCase
 
     assert suplente.reload.pending?
     assert_nil suplente.offered_at
+  end
+
+  test "does nothing yet when the offer was made recently and the deadline has not passed" do
+    turno    = create_turno
+    create_entry(turno: turno, role: :titular, position: 0, phone: "+5491100003008", name: "Capitan")
+    suplente = create_entry(turno: turno, role: :suplente, position: 1, phone: "+5491100003009", name: "Suplente", offered_at: 5.minutes.ago)
+
+    CheckReplacementTimeoutJob.perform_now(suplente.id)
+
+    assert suplente.reload.pending?
   end
 end
