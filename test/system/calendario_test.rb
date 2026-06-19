@@ -9,6 +9,11 @@ class CalendarioTest < ApplicationSystemTestCase
     fill_in "email_address", with: @user.email_address
     fill_in "password", with: "password"
     click_on "Ingresar"
+
+    # Esperar a que termine la navegación (Turbo, asíncrona) antes de que los
+    # tests hagan su propio `visit` — si no, ese `visit` puede cancelar en
+    # pleno vuelo el POST de login y la sesión nunca llega a establecerse.
+    assert_no_selector "h1", text: "Ingresar"
   end
 
   test "visiting the calendario shows canchas and empty slots" do
