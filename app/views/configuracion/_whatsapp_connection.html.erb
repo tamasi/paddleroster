@@ -1,0 +1,23 @@
+<%= turbo_frame_tag "whatsapp-connection-status", src: configuracion_whatsapp_connection_path, data: { controller: "whatsapp-connection", status: whatsapp_connection.status } do %>
+  <div class="bg-surface dark:bg-surface-dark shadow rounded-lg p-6">
+    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-4 <%= whatsapp_connection_badge_classes(whatsapp_connection.status) %>">
+      <%= humanize_whatsapp_connection_status(whatsapp_connection.status) %>
+    </span>
+
+    <% if whatsapp_connection.connected? %>
+      <p class="text-sm text-text-secondary dark:text-text-secondary-dark mb-1">Número conectado</p>
+      <p class="text-lg text-text-primary dark:text-text-primary-dark mb-4"><%= whatsapp_connection.phone %></p>
+      <%= button_to "Desconectar", disconnect_configuracion_whatsapp_connection_path, method: :post, class: "text-danger dark:text-danger-dark hover:underline font-medium cursor-pointer" %>
+    <% elsif whatsapp_connection.connecting? %>
+      <% if whatsapp_connection.qr_code.present? %>
+        <p class="text-sm text-text-secondary dark:text-text-secondary-dark mb-3">Escaneá este código con WhatsApp (Dispositivos vinculados) para conectar el Bot:</p>
+        <%= image_tag whatsapp_connection.qr_code, alt: "Código QR para conectar el Bot de WhatsApp", class: "w-48 h-48 rounded-md" %>
+      <% else %>
+        <p class="text-sm text-text-secondary dark:text-text-secondary-dark">Generando código QR…</p>
+      <% end %>
+    <% else %>
+      <p class="text-sm text-text-secondary dark:text-text-secondary-dark mb-4">El Bot no está conectado a ningún número de WhatsApp.</p>
+      <%= button_to "Conectar", connect_configuracion_whatsapp_connection_path, method: :post, class: "rounded-md px-4 py-2 bg-primary dark:bg-primary-dark hover:opacity-90 text-primary-foreground dark:text-primary-foreground-dark font-medium cursor-pointer" %>
+    <% end %>
+  </div>
+<% end %>

@@ -55,3 +55,8 @@
 
 ## Deferred from: code review of 5-4-reemplazo-auto-gestionado-de-suplentes-fr-3.md (2026-06-18)
 - Concurrency issue if multiple suplentes offered at same time [app/services/roster_replacement_service.rb:14] — deferred, pre-existing
+
+## Deferred from: code review of 1-7-conexion-del-bot-de-whatsapp-fr-16.md (2026-06-19)
+- `upsertConnectionStatus`/`connection-poller.ts` siempre operan sobre "la primera fila"/el socket global, ignorando `complejo_id` [whatsapp-service/src/connection-status.ts, connection-poller.ts] — deferred, decisión de alcance ya documentada (PRD §10 Guardrails, Out of Scope de la Story 1.7, decision-log del PRD): un solo Complejo activo por diseño en este MVP, sin multi-sesión real.
+- `SELECT...FOR UPDATE SKIP LOCKED` en `connection-poller.ts` sin transacción explícita, el lock no protege nada como está escrito [whatsapp-service/src/connection-poller.ts:22-32] — deferred, replica exactamente el mismo patrón preexistente de `outbox-poller.ts` (Story 5.1), no es una regresión de esta historia.
+- Polling del Stimulus controller sin límite de tiempo ni vía de escape si el QR nunca se escanea o la conexión nunca resuelve [app/javascript/controllers/whatsapp_connection_controller.js] — deferred, mejora de UX, ninguna AC lo exige.

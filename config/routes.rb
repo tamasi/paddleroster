@@ -15,6 +15,10 @@ Rails.application.routes.draw do
 
   resource :configuracion, controller: :configuracion, only: %i[ show edit update ] do
     resources :canchas, except: %i[ index show ]
+    resource :whatsapp_connection, only: [ :show ], controller: "whatsapp_connections" do
+      post :connect
+      post :disconnect
+    end
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

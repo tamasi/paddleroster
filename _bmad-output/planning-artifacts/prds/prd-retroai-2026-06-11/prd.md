@@ -2,7 +2,7 @@
 title: retroai
 status: final
 created: 2026-06-11
-updated: 2026-06-11
+updated: 2026-06-18
 sources:
   - "{project-root}/_bmad-output/planning-artifacts/briefs/brief-retroai-2026-06-10/brief.md"
   - "{project-root}/_bmad-output/planning-artifacts/briefs/brief-retroai-2026-06-10/addendum.md"
@@ -287,6 +287,28 @@ Dueño puede ver y editar, desde Configuración, los datos del Complejo (nombre,
 **Out of Scope:**
 - Configuración de tarifas/precios por Cancha u horario — `[ASSUMPTION]`, ver §9.
 
+---
+
+### 4.6 Conexión del Bot de WhatsApp (Configuración)
+
+**Description:** Hoy el número de WhatsApp que usa el Bot del Complejo se empareja escaneando un código QR que solo se ve por terminal, con acceso directo al servidor — no hay forma de verlo ni administrarlo desde el Panel. Esta feature lo expone en Configuración para que el Dueño pueda conectar, ver el estado y re-emparejar el Bot sin depender de acceso técnico al servidor.
+
+**Functional Requirements:**
+
+#### FR-16: Conexión y administración del número de WhatsApp del Bot
+
+Dueño puede ver el estado de conexión del Bot de WhatsApp y emparejar/re-emparejar su propio número desde Configuración.
+
+**Consequences (testable):**
+- Configuración muestra el estado de conexión del Bot (Conectado / Desconectado / Conectando) y, si está Conectado, el número de WhatsApp vinculado — detectado automáticamente tras el emparejamiento, nunca ingresado manualmente.
+- Cuando el estado es Desconectado, Dueño puede iniciar un emparejamiento nuevo: el Panel muestra un código QR para escanear con la app de WhatsApp (mismo mecanismo ya usado por el Bot, antes solo visible por terminal).
+- Dueño puede desconectar la sesión activa desde el Panel para volver a emparejar con un número distinto.
+- Empleado no tiene acceso a esta sección (alineado con FR-12).
+
+**Out of Scope:**
+- Múltiples números de WhatsApp activos al mismo tiempo (un Complejo por sesión) — el MVP sigue validando contra un único Complejo piloto (ver §10 Guardrails); soportar varias sesiones simultáneas queda diferido a cuando exista un segundo Complejo real.
+- Emparejamiento por número ingresado a mano + código de verificación (`requestPairingCode`) — se usa el flujo estándar de escaneo de QR, más confiable en la librería no oficial elegida para el Bot (ver Open Question 4 / `architecture.md`).
+
 ## 5. Non-Goals (Explicit)
 
 - **Matching de jugadores sueltos** para completar Roster, perfiles con nivel/reputación y calificación post-partido — evolución futura (red multi-complejo).
@@ -305,7 +327,7 @@ Dueño puede ver y editar, desde Configuración, los datos del Complejo (nombre,
 - Panel: Calendario de las 7 Canchas con Turnos de ambos Orígenes (FR-4), creación manual de Turno (FR-5), Turnos Fijos/Recurrentes (FR-6), registro de Origen para reporting (FR-7), cancelación de Turno (FR-15).
 - Panel: visualización y registro de Estado de Pago (FR-8, FR-9).
 - Panel: Reportes de Ocupación por Cancha/día/horario (FR-10).
-- Panel: Login multi-usuario, roles Dueño/Empleado, invitación de Empleados (FR-11, FR-12, FR-13).
+- Panel: Login multi-usuario, roles Dueño/Empleado, invitación de Empleados (FR-11, FR-12, FR-13), gestión de Canchas y datos del Complejo (FR-14), conexión/administración del número de WhatsApp del Bot (FR-16).
 - Modo claro/oscuro y diseño responsive (mobile-first + notebook) del Panel, según `DESIGN.md`/`EXPERIENCE.md`.
 
 ### 6.2 Out of Scope for MVP
@@ -360,3 +382,4 @@ Dueño puede ver y editar, desde Configuración, los datos del Complejo (nombre,
 **Guardrails**
 - El modelo de datos no debe acoplar la identidad del Jugador al Complejo único del MVP de forma irreversible — preserva la posibilidad de la red multi-complejo descrita en la Visión a 2-3 años, sin implementarla ahora (ver §5 Non-Goals).
 - Riesgo de timing: actores establecidos (Playtomic, CanchaFija, ATC) podrían replicar el ángulo de roster/bot si el lanzamiento se demora — priorizar validar el piloto y salir a producción cuanto antes, alineado con las expectativas de lanzamiento real declaradas para este proyecto.
+- La administración del número de WhatsApp del Bot (FR-16) se limita a una sesión activa por vez en este MVP — preparar el camino a múltiples sesiones simultáneas (una por Complejo) si se valida la expansión a otros complejos, sin construirlo ahora.

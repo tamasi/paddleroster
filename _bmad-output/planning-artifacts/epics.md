@@ -47,6 +47,8 @@ FR-14: Dueño puede ver y editar, desde Configuración, los datos del Complejo (
 
 FR-15: Administrador/Empleado pueden cancelar un Turno (de cualquier Origen) desde el Panel. Un Turno cancelado libera el horario en el Calendario. Para Turnos de Origen Bot, cancelar no modifica el Roster (permanece de solo lectura) ni notifica a los Jugadores vía Bot.
 
+FR-16: Dueño puede ver el estado de conexión del Bot de WhatsApp (Conectado/Desconectado/Conectando) y emparejar/re-emparejar su propio número desde Configuración, escaneando un código QR mostrado en el Panel — sin necesitar acceso al servidor. El número conectado se detecta automáticamente tras el emparejamiento. Empleado no tiene acceso a esta sección.
+
 ### NonFunctional Requirements
 
 NFR-1: Las notificaciones del Bot (invitación, confirmación, cambio de roster) deben llegar en segundos, no minutos — crítico para coordinar reemplazos de último momento (FR-3).
@@ -122,12 +124,13 @@ FR-12: Epic 1 - Roles Dueño/Empleado
 FR-13: Epic 1 - Invitación de Empleados
 FR-14: Epic 1 - Gestión de Canchas y datos del Complejo
 FR-15: Epic 2 - Cancelación de Turno desde el Panel
+FR-16: Epic 1 - Conexión del Bot de WhatsApp por Complejo
 
 ## Epic List
 
 ### Epic 1: Acceso y Configuración del Complejo
-Dueño y Empleados pueden autenticarse en el Panel, el Dueño invita empleados sin cargar credenciales manualmente, y el Dueño configura los datos del Complejo y sus 7 Canchas — la base sobre la que se construye todo lo demás.
-**FRs covered:** FR-11, FR-12, FR-13, FR-14
+Dueño y Empleados pueden autenticarse en el Panel, el Dueño invita empleados sin cargar credenciales manualmente, el Dueño configura los datos del Complejo y sus 7 Canchas, y conecta/administra el número de WhatsApp del Bot — la base sobre la que se construye todo lo demás.
+**FRs covered:** FR-11, FR-12, FR-13, FR-14, FR-16
 
 ### Epic 2: Calendario y Gestión de Turnos
 Administrador/Empleado ven el Calendario de las 7 Canchas, crean Turnos manuales (llamadas telefónicas), configuran Turnos Fijos recurrentes, cancelan Turnos, y el sistema registra el Origen de cada Turno para reporting — reemplaza el cuaderno de reservas para todo lo que no llega por el Bot.
@@ -144,6 +147,10 @@ El Dueño ve la Ocupación por Cancha/día/horario para un período seleccionabl
 ### Epic 5: Bot de WhatsApp — Roster con Confirmación y Reemplazo
 Un Capitán crea un Turno y arma su Roster vía WhatsApp, cada Jugador confirma individualmente, y los reemplazos por cancelación se gestionan solos ofreciendo el cupo a los Suplentes — el diferencial central de retroai frente al cuaderno/WhatsApp informal.
 **FRs covered:** FR-1, FR-2, FR-3
+
+### Epic 6: Preparación para Producción Real
+El sistema queda efectivamente desplegado y alcanzable para usuarios reales (no solo en la máquina de Hernan), con un pipeline de CI/CD que construye y publica las imágenes de ambos servicios, y el login protegido contra fuerza bruta — cierra la brecha entre "todas las FRs están done" y "el piloto puede arrancar en producción". No introduce FRs nuevas; cubre el Step 6 de la secuencia de implementación de `architecture.md` (CI/CD + Kamal + droplet) y el ítem de Rate Limiting de "Additional Requirements", ninguno de los dos ejecutado hasta ahora.
+**FRs covered:** ninguna (infraestructura/NFR — ver NFR-7, NFR-9 y Additional Requirements: CI/CD, Kamal, Rack::Attack)
 
 ## Epic 1: Acceso y Configuración del Complejo
 
@@ -277,6 +284,34 @@ So that pueda usar el Panel cómodamente en distintas condiciones de luz (ej. mo
 **Given** el modo oscuro activo
 **When** reviso `status-pill`/`occupancy-bar`/textos
 **Then** mantienen contraste AA 4.5:1 (NFR-4)
+
+### Story 1.7: Conexión del Bot de WhatsApp (FR-16)
+
+As a Dueño del Complejo,
+I want conectar y administrar el número de WhatsApp de mi Bot desde Configuración,
+So that no dependa de acceso al servidor para emparejar o re-emparejar el Bot.
+
+**Acceptance Criteria:**
+
+**Given** que soy Dueño autenticado en Configuración
+**When** el Bot no tiene ninguna sesión de WhatsApp activa
+**Then** veo el estado "Desconectado" y un botón para iniciar la conexión
+
+**Given** que inicio la conexión desde Configuración
+**When** el Bot todavía no fue emparejado
+**Then** veo un código QR para escanear con la app de WhatsApp, el mismo mecanismo que hoy solo se ve por terminal
+
+**Given** que escaneo el QR con mi WhatsApp
+**When** el emparejamiento se completa
+**Then** Configuración muestra el estado "Conectado" junto con el número de WhatsApp vinculado, detectado automáticamente (nunca ingresado a mano)
+
+**Given** que el Bot está Conectado
+**When** toco "Desconectar"
+**Then** la sesión se cierra, vuelve a mostrarse el estado "Desconectado" y puedo iniciar un nuevo emparejamiento con otro número
+
+**Given** que soy Empleado autenticado
+**When** intento acceder a esta sección de Configuración (por navegación o URL directa)
+**Then** el acceso me es denegado (consistente con Story 1.3 / FR-12)
 
 ## Epic 2: Calendario y Gestión de Turnos
 
@@ -627,3 +662,75 @@ So that no tenga que buscar reemplazo manualmente por WhatsApp.
 **Given** el Detalle de Turno en el Panel
 **When** un cupo queda "Sin cubrir"
 **Then** se refleja con su propio estado visual en el `roster-row` (UX-DR3/UX-DR4)
+
+## Epic 6: Preparación para Producción Real
+
+El sistema queda efectivamente desplegado y alcanzable para usuarios reales (no solo en la máquina de Hernan), con un pipeline de CI/CD que construye y publica las imágenes de ambos servicios, y el login protegido contra fuerza bruta — cierra la brecha entre "todas las FRs están done" y "el piloto puede arrancar en producción". Cubre el Step 6 de la secuencia de implementación de `architecture.md` (CI/CD + Kamal + droplet) y el ítem de Rate Limiting de "Additional Requirements", ninguno ejecutado hasta ahora. No introduce FRs nuevas.
+
+### Story 6.1: Pipeline de CI/CD — build y push de imágenes
+
+As a Hernan (desarrollador único),
+I want que el pipeline de CI construya y publique las imágenes Docker de Rails y de `whatsapp-service` tras pasar los tests,
+So that pueda desplegar una versión validada sin armar las imágenes a mano.
+
+**Acceptance Criteria:**
+
+**Given** que un push a `master` pasa los jobs de test/lint/scan existentes
+**When** el workflow de CI continúa
+**Then** se construye la imagen Docker de la app Rails (usando el `Dockerfile` generado por Rails) y se publica en GHCR con un tag identificable (sha/branch)
+
+**Given** el mismo push exitoso
+**When** el pipeline procesa `whatsapp-service/`
+**Then** se construye su imagen Docker (`whatsapp-service/Dockerfile`) y se publica en GHCR con el mismo esquema de tags
+
+**Given** un Pull Request (no un push a `master`)
+**When** corre el pipeline
+**Then** se ejecutan tests/lint/scan como hoy, pero NO se construyen ni publican imágenes — el build/push solo ocurre en `master`
+
+**Given** que el build de una imagen falla
+**When** el job de build/push corre
+**Then** el workflow termina en rojo y no se publica nada a GHCR (evita publicar imágenes rotas)
+
+### Story 6.2: Configuración real de despliegue (Kamal)
+
+As a Hernan (desarrollador único),
+I want que `config/deploy.yml` describa el despliegue real (servicios `web` + `whatsapp`, accesorio Postgres) en vez del scaffold por defecto,
+So that pueda ejecutar `kamal deploy` contra el droplet real sin reconstruir la configuración a mano.
+
+**Acceptance Criteria:**
+
+**Given** `config/deploy.yml`
+**When** lo reviso
+**Then** define el servicio `web` (Rails) apuntando a la imagen publicada en GHCR (Story 6.1) y el servicio `whatsapp` (adaptador Node) con su propia imagen
+
+**Given** el mismo archivo
+**When** reviso la sección de `accessories`
+**Then** define un accesorio Postgres compartido por ambos servicios, con volumen persistente
+
+**Given** que todavía no hay un droplet de DigitalOcean real provisionado
+**When** se completa esta historia
+**Then** la IP del servidor en `deploy.yml` queda como placeholder documentado — provisionar el droplet real y ejecutar `kamal setup`/`kamal deploy` por primera vez es una acción manual de Hernan fuera del alcance de esta historia, documentada como runbook en `README.md`
+
+**Given** `.kamal/secrets`
+**When** lo reviso
+**Then** declara las variables necesarias (`RAILS_MASTER_KEY`, credenciales de Postgres, token de GHCR) sin valores reales hardcodeados
+
+### Story 6.3: Rate limiting en el login (Rack::Attack)
+
+As a Hernan (desarrollador único),
+I want limitar la tasa de intentos de login,
+So that el sistema esté protegido contra ataques de fuerza bruta sobre las credenciales de Dueño/Empleado.
+
+**Acceptance Criteria:**
+
+**Given** múltiples intentos de login fallidos desde la misma IP en una ventana corta de tiempo
+**When** se supera el límite configurado
+**Then** Rack::Attack responde con un throttle (429) en vez de procesar el intento de login
+
+**Given** un intento de login legítimo dentro del límite normal
+**When** el usuario ingresa sus credenciales
+**Then** el login funciona exactamente igual que hoy (sin falsos positivos)
+
+**Given** que el límite se superó
+**When** el usuario reintenta tras la ventana de throttle
+**Then** puede volver a intentar login normalmente (el bloqueo es temporal, no permanente)
