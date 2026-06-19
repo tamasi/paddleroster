@@ -114,10 +114,14 @@ async function connectToWhatsAppUnguarded(): Promise<void> {
   sock.ev.on("messages.upsert", async ({ messages }) => {
     for (const msg of messages) {
       if (!msg.message || msg.key.fromMe) continue;
-      const jid = msg.key.remoteJid;
+      const remoteJid = msg.key.remoteJid;
       // Ignorar mensajes de grupos por ahora (Story 5.2 maneja comandos específicos)
-      if (!jid || jid.endsWith("@g.us")) continue;
+      if (!remoteJid || remoteJid.endsWith("@g.us")) continue;
 
+      // Con la privacidad de número activada, WhatsApp identifica al remitente
+      // por un JID "@lid" en vez del JID clásico "@s.whatsapp.net" con el número
+      // real — Baileys expone el equivalente en número de teléfono en senderPn.
+      const jid = msg.key.senderPn ?? remoteJid;
       const phone = jidToPhone(jid);
       const text =
         msg.message.conversation ??
@@ -127,12 +131,6 @@ async function connectToWhatsAppUnguarded(): Promise<void> {
       if (!text.trim()) continue;
 
       await onIncomingMessage(phone, text);
-
-      // Respuesta de bienvenida provisional — Story 5.2 implementa routing real
-      await sendMessage(
-        phone,
-        "¡Hola! Soy el Bot de retroai. Próximamente podré ayudarte a gestionar tu turno."
-      ).catch((err) => console.error("Error enviando bienvenida:", err));
     }
   });
 }
@@ -173,7 +171,9 @@ function phoneToJid(phone: string): string {
 }
 
 function jidToPhone(jid: string): string {
-  return `+${jid.replace("@s.whatsapp.net", "")}`;
+  // Soporta tanto JIDs clásicos ("549...@s.whatsapp.net") como "@lid", y
+  // descarta el sufijo de device id ("549...:8") que Baileys agrega en multi-dispositivo.
+  return `+${jid.split("@")[0].split(":")[0]}`;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
