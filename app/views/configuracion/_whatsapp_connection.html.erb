@@ -1,4 +1,4 @@
-<%= turbo_frame_tag "whatsapp-connection-status", src: configuracion_whatsapp_connection_path, data: { controller: "whatsapp-connection", status: whatsapp_connection.status } do %>
+<%= turbo_frame_tag "whatsapp-connection-status", data: { controller: "whatsapp-connection", status: whatsapp_connection.status, poll_url: configuracion_whatsapp_connection_path } do %>
   <div class="bg-surface dark:bg-surface-dark shadow rounded-lg p-6">
     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-4 <%= whatsapp_connection_badge_classes(whatsapp_connection.status) %>">
       <%= humanize_whatsapp_connection_status(whatsapp_connection.status) %>
