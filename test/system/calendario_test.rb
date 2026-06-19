@@ -4,7 +4,7 @@ class CalendarioTest < ApplicationSystemTestCase
   setup do
     @user = users(:one) # owner associated with complejo_piloto
     @cancha = canchas(:one)
-    
+
     visit new_session_path
     fill_in "email_address", with: @user.email_address
     fill_in "password", with: "password"
@@ -14,8 +14,8 @@ class CalendarioTest < ApplicationSystemTestCase
   test "visiting the calendario shows canchas and empty slots" do
     visit calendario_url
 
-    assert_selector "h1", text: /#{l(Date.current, format: "%A %d de %B", locale: :es)}/i
-    
+    assert_selector "h1", text: /#{I18n.l(Date.current, format: "%A %d de %B", locale: :es)}/i
+
     # Check headers
     assert_text @cancha.name
 
@@ -25,8 +25,8 @@ class CalendarioTest < ApplicationSystemTestCase
 
   test "visiting the calendario shows turnos" do
     # Create a turno for today at 15:00
-    Turno.create!(start_time: Date.current.change(hour: 15), cancha: @cancha, origin: :manual, payment_status: :pending)
-    
+    Turno.create!(start_time: Date.current.change(hour: 15), cancha: @cancha, reservation_name: "Marcela", origin: :manual, payment_status: :pending)
+
     visit calendario_url
 
     # Should see the turno card

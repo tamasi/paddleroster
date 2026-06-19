@@ -65,3 +65,4 @@ es:
       blank: "no puede estar en blanco"
       not_a_number: "no es un número"
       greater_than: "debe ser mayor que %{count}"
+      record_invalid: "La validación falló: %{errors}"
