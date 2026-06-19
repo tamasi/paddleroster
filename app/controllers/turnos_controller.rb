@@ -10,7 +10,7 @@ class TurnosController < ApplicationController
     # Recuperar los turnos del día para las canchas del complejo
     @turnos = Turno.active.where(cancha: @canchas, start_time: @date.all_day)
                    .includes(:cancha, :roster_entries, :payments)
-                   .index_by { |t| [t.cancha_id, t.start_time.hour] }
+                   .index_by { |t| [ t.cancha_id, t.start_time.hour ] }
   end
 
   def new
