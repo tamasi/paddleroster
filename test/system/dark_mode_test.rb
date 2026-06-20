@@ -6,6 +6,13 @@ class DarkModeTest < ApplicationSystemTestCase
     fill_in "email_address", with: users(:one).email_address
     fill_in "password", with: "password"
     click_on "Ingresar"
+
+    # Mismo wait explícito que calendario_test.rb: login (bcrypt + Turbo)
+    # puede tardar más que el default de Capybara (2s) en runners
+    # compartidos de CI. El toggle de dark mode solo existe en el header
+    # de una página autenticada, así que probarlo confirma que la sesión
+    # quedó establecida antes de continuar.
+    assert_selector "[data-controller='dark-mode-toggle']", wait: 10
   end
 
   test "toggling dark mode applies the dark class and persists across reload" do

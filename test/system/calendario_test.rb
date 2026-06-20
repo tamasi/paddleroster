@@ -17,7 +17,10 @@ class CalendarioTest < ApplicationSystemTestCase
     # (AppHeaderComponent), a diferencia de "ausencia del h1 de login": eso
     # podía pasar de forma trivial en cualquier página sin h1, sin probar
     # realmente que la sesión quedó establecida.
-    assert_text @user.email_address
+    # wait explícito por encima del default (2s) de Capybara: en runners
+    # compartidos de GitHub Actions, login (bcrypt + Turbo) ocasionalmente
+    # tarda más que el default y el test fallaba de forma intermitente.
+    assert_text @user.email_address, wait: 10
   end
 
   test "visiting the calendario shows canchas and empty slots" do
