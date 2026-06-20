@@ -24,13 +24,14 @@ class CalendarioTest < ApplicationSystemTestCase
     # Check headers
     assert_text @cancha.name
 
-    # Check empty slots
-    assert_selector "button", text: /Cancha libre/i
+    # Check empty slots (son links estilizados como botón, no <button>)
+    assert_selector "a", text: /Cancha libre/i
   end
 
   test "visiting the calendario shows turnos" do
-    # Create a turno for today at 15:00
-    Turno.create!(start_time: Date.current.change(hour: 15), cancha: @cancha, reservation_name: "Marcela", origin: :manual, payment_status: :pending)
+    # Create a turno for today at 15:00 — Date#change ignora :hour (un Date no
+    # tiene componente de hora); hace falta Time.current para que surta efecto.
+    Turno.create!(start_time: Time.current.change(hour: 15, min: 0, sec: 0), cancha: @cancha, reservation_name: "Marcela", origin: :manual, payment_status: :pending)
 
     visit calendario_url
 
