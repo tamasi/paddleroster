@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-11
-last_updated: 2026-06-19 # Story 6.1 verificada end-to-end en GitHub Actions real, status review
+last_updated: 2026-06-19 # Story 6.1 code review completa, status done
 project: retroai
 project_key: NOKEY
 tracking_system: file-system
@@ -77,7 +77,7 @@ development_status:
   epic-5-retrospective: optional
 
   epic-6: in-progress
-  6-1-pipeline-de-ci-cd-build-y-push-de-imagenes: review
+  6-1-pipeline-de-ci-cd-build-y-push-de-imagenes: done
   6-2-configuracion-real-de-despliegue-kamal: backlog
   6-3-rate-limiting-en-el-login-rack-attack: backlog
   epic-6-retrospective: optional

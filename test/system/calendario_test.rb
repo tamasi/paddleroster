@@ -13,7 +13,11 @@ class CalendarioTest < ApplicationSystemTestCase
     # Esperar a que termine la navegación (Turbo, asíncrona) antes de que los
     # tests hagan su propio `visit` — si no, ese `visit` puede cancelar en
     # pleno vuelo el POST de login y la sesión nunca llega a establecerse.
-    assert_no_selector "h1", text: "Ingresar"
+    # El email del usuario está en el header de toda página autenticada
+    # (AppHeaderComponent), a diferencia de "ausencia del h1 de login": eso
+    # podía pasar de forma trivial en cualquier página sin h1, sin probar
+    # realmente que la sesión quedó establecida.
+    assert_text @user.email_address
   end
 
   test "visiting the calendario shows canchas and empty slots" do

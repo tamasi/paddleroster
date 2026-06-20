@@ -155,6 +155,7 @@ jobs:
     needs: [ scan_ruby, scan_js, lint, test, system-test ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       packages: write
@@ -196,6 +197,7 @@ jobs:
     needs: [ scan_ruby, scan_js, lint, test, system-test ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       packages: write

@@ -3,14 +3,14 @@ story_id: "6.1"
 story_key: "6-1-pipeline-de-ci-cd-build-y-push-de-imagenes"
 epic_id: "6"
 title: "Pipeline de CI/CD — build y push de imágenes"
-status: "review"
+status: "done"
 last_updated: "2026-06-19"
 baseline_commit: "93b870a149e178cf009b3ce87c4bbc29ac8ae422"
 ---
 
 # Story 6.1: Pipeline de CI/CD — build y push de imágenes
 
-Status: review
+Status: done
 
 ## Story
 
@@ -126,11 +126,11 @@ No hay test automatizado posible para un workflow de GitHub Actions sin ejecutar
 
 ### Review Findings
 
-- [ ] [Review][Decision] Sin `concurrency` group en `build_and_push_web`/`build_and_push_whatsapp` — dos pushes rápidos a `master` pueden disparar builds en paralelo; con el tag flotante `type=ref,event=branch` ("master"), el que termine último "gana" esa tag específica sin importar cuál commit es más nuevo (las tags por sha siempre quedan correctas, solo la tag de branch puede quedar momentáneamente desincronizada). Opciones: (a) agregar `concurrency: { group: ghcr-push-${{ github.workflow }}, cancel-in-progress: true }` por job para cancelar el build viejo cuando llega uno nuevo, (b) aceptarlo tal cual (la tag por sha siempre es confiable, la de branch es solo para conveniencia), (c) sacar la tag de branch y dejar solo sha. [.github/workflows/ci.yml]
+- [x] [Review][Defer] Sin `concurrency` group en `build_and_push_web`/`build_and_push_whatsapp` — dos pushes rápidos a `master` pueden disparar builds en paralelo; con el tag flotante `type=ref,event=branch` ("master"), el que termine último "gana" esa tag específica sin importar cuál commit es más nuevo. [.github/workflows/ci.yml] — deferred, decisión explícita de Hernan: la tag por sha siempre es inmutable y confiable; la tag de branch es solo conveniencia, no crítica en un proyecto de un solo desarrollador.
 
-- [ ] [Review][Patch] Sin `timeout-minutes` en los 2 jobs nuevos — un build colgado (cache/registro con problemas) consume un runner sin límite hasta el techo default de 6hs de GitHub Actions. [.github/workflows/ci.yml]
-- [ ] [Review][Patch] `config/brakeman.ignore` quedó con `"brakeman_version": "8.0.4"` pero `Gemfile.lock` en el mismo diff sube brakeman a `8.0.5` (el ignore se generó antes del `bundle update`). Verificado que el fingerprint sigue matcheando bien bajo 8.0.5 — es solo un dato de metadata desactualizado, no una falla funcional. [config/brakeman.ignore:16]
-- [ ] [Review][Patch] El guard post-login `assert_no_selector "h1", text: "Ingresar"` en `calendario_test.rb` es más débil de lo necesario: como `inicio#index` (destino real tras login) no tiene ningún `h1`, la aserción puede resolverse en falso-aceptable sin probar realmente que la sesión quedó establecida. Reforzar afirmando algo concreto del destino (ej. el email del usuario, visible en el header) en vez de solo la ausencia del heading de login. [test/system/calendario_test.rb:16]
+- [x] [Review][Patch] Sin `timeout-minutes` en los 2 jobs nuevos — un build colgado (cache/registro con problemas) consume un runner sin límite hasta el techo default de 6hs de GitHub Actions. [.github/workflows/ci.yml] — **Resuelto:** agregado `timeout-minutes: 15` a ambos jobs.
+- [x] [Review][Patch] `config/brakeman.ignore` quedó con `"brakeman_version": "8.0.4"` pero `Gemfile.lock` en el mismo diff sube brakeman a `8.0.5` (el ignore se generó antes del `bundle update`). Verificado que el fingerprint sigue matcheando bien bajo 8.0.5 — es solo un dato de metadata desactualizado, no una falla funcional. [config/brakeman.ignore:16] — **Resuelto:** actualizado a `"8.0.5"` y refrescado el timestamp `updated`. Reverificado: `bin/brakeman` sigue ignorando el mismo fingerprint, 0 warnings activos.
+- [x] [Review][Patch] El guard post-login `assert_no_selector "h1", text: "Ingresar"` en `calendario_test.rb` es más débil de lo necesario: como `inicio#index` (destino real tras login) no tiene ningún `h1`, la aserción puede resolverse en falso-aceptable sin probar realmente que la sesión quedó establecida. Reforzar afirmando algo concreto del destino (ej. el email del usuario, visible en el header) en vez de solo la ausencia del heading de login. [test/system/calendario_test.rb:16] — **Resuelto:** cambiado a `assert_text @user.email_address` (el `AppHeaderComponent` lo renderiza en toda página autenticada). Reverificado localmente: `test/system/` 3/3 verde.
 
 - [x] [Review][Defer] `packages: write` sin firma de imagen ni provenance attestation (cosign/`provenance: true`) — cualquiera que pueda mergear a `master` puede publicar contenido arbitrario al namespace de GHCR sin verificación posterior. [.github/workflows/ci.yml] — deferred, hardening de madurez de producción, alcance de una historia futura.
 - [x] [Review][Defer] `build_and_push_web`/`build_and_push_whatsapp` son prácticamente copy-paste (mismos 5 steps, solo cambia `context`/`file`/`images`) — un matrix o workflow reusable evitaría que el próximo cambio se aplique en un job y se olvide en el otro. [.github/workflows/ci.yml] — deferred, refactor de mantenibilidad, no bloqueante para AC1-AC4.
@@ -262,3 +262,4 @@ Verificación final: run [27856812104](https://github.com/tamasi/paddleroster/ac
 
 - 2026-06-19: Implementación de Tasks 1-3 (`8875634`) — trigger de push corregido, jobs `build_and_push_web`/`build_and_push_whatsapp` agregados. Validado localmente (sintaxis YAML, suite Rails sin regresión). Status → `in-progress`.
 - 2026-06-19: Verificación end-to-end (Task 4) en GitHub Actions real. Encontrados y corregidos en cadena: Actions deshabilitado a nivel de repo (`4b67af4` bit de ejecución de `bin/*`), `scan_ruby`/`lint` (`7740114`, `b573d95` — brakeman desactualizado + falso positivo, offenses de rubocop), `system-test` en 3 rondas (`6ebb11e` helper `l`/`reservation_name`, `c88a9ce` race condition de Turbo en el login, `9f4dc8f` `Date#change(hour:)` no-op + selector `button`/`a`). Run final [27856812104](https://github.com/tamasi/paddleroster/actions/runs/27856812104): 7/7 jobs en verde, imágenes publicadas en GHCR. Status → `review`.
+- 2026-06-19: Code review (3 capas: Blind Hunter, Edge Case Hunter, Acceptance Auditor). 1 decisión diferida con justificación explícita de Hernan (sin `concurrency` group — tag por sha siempre confiable, no crítico para un solo desarrollador), 3 patches aplicados (`timeout-minutes: 15` en los 2 jobs nuevos, metadata de `config/brakeman.ignore` actualizada a 8.0.5, guard post-login reforzado a `assert_text @user.email_address`), 11 hallazgos diferidos a `deferred-work.md`, 12 descartados como ruido — entre ellos, 2 hallazgos sobre la clave `record_invalid` resultaron incorrectos al verificarlos empíricamente (sí es consumida por `ActiveRecord::RecordInvalid`), lo cual destapó un gap real distinto (traducción faltante para `Turno#cancha`), también diferido. Suite final: 276/276 + 3/3 system tests verde. Status → `done`.

@@ -12,6 +12,6 @@
       "note": "Código generado por `bin/rails generate authentication` (scaffold nativo de Rails 8), sin modificar. Una request HEAD simplemente no guarda `return_to_after_authenticating` — no hay impacto de seguridad real, HEAD no transporta intención de navegación."
     }
   ],
-  "updated": "2026-06-19 17:57:21 -0300",
-  "brakeman_version": "8.0.4"
+  "updated": "2026-06-19 23:33:21 -0300",
+  "brakeman_version": "8.0.5"
 }
