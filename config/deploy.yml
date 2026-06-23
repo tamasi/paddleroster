@@ -2,12 +2,16 @@
 service: retroai
 
 # Name of the container image (use your-user/app-name on external registries).
-image: retroai
+# NO incluir el host del registro acá: Kamal lo arma como `registry.server/image`
+# (repository) — con `registry.server: ghcr.io` esto resuelve a `ghcr.io/tamasi/paddleroster`,
+# el nombre real publicado por build_and_push_web en Story 6.1. Incluir "ghcr.io/" en
+# ambos lugares duplica el host (`ghcr.io/ghcr.io/...`) — verificado con `bin/kamal config`.
+image: tamasi/paddleroster
 
 # Deploy to these servers.
 servers:
   web:
-    - 192.168.0.1
+    - 203.0.113.10 # TODO(Hernan): reemplazar por la IP real del droplet de DigitalOcean una vez provisionado (ver README.md → Despliegue)
   # job:
   #   hosts:
   #     - 192.168.0.1
@@ -26,20 +30,18 @@ servers:
 
 # Where you keep your container images.
 registry:
-  # Alternatives: hub.docker.com / registry.digitalocean.com / ghcr.io / ...
-  server: localhost:5555
-
-  # Needed for authenticated registries.
-  # username: your-user
+  server: ghcr.io
+  username: tamasi
 
   # Always use an access token rather than real password when possible.
-  # password:
-  #   - KAMAL_REGISTRY_PASSWORD
+  password:
+    - KAMAL_REGISTRY_PASSWORD
 
 # Inject ENV variables into containers (secrets come from .kamal/secrets).
 env:
   secret:
     - RAILS_MASTER_KEY
+    - RETROAI_DATABASE_PASSWORD
   clear:
     # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
     # When you start using multiple servers, you should split out job processing to a dedicated machine.
@@ -51,9 +53,9 @@ env:
     # Set number of cores available to the application on each server (default: 1).
     # WEB_CONCURRENCY: 2
 
-    # Match this to any external database server to configure Active Record correctly
-    # Use retroai-db for a db accessory server on same machine via local kamal docker network.
-    # DB_HOST: 192.168.0.2
+    # Accesorio db (Postgres) definido más abajo, mismo droplet: Kamal lo resuelve
+    # por nombre de contenedor en la red Docker interna de la app.
+    DB_HOST: retroai-db
 
     # Log everything from Rails
     # RAILS_LOG_LEVEL: debug
@@ -95,25 +97,26 @@ builder:
 #   user: app
 
 # Use accessory services (secrets come from .kamal/secrets).
-# accessories:
-#   db:
-#     image: mysql:8.0
-#     host: 192.168.0.2
-#     # Change to 3306 to expose port to the world instead of just local network.
-#     port: "127.0.0.1:3306:3306"
-#     env:
-#       clear:
-#         MYSQL_ROOT_HOST: '%'
-#       secret:
-#         - MYSQL_ROOT_PASSWORD
-#     files:
-#       - config/mysql/production.cnf:/etc/mysql/my.cnf
-#       - db/production.sql:/docker-entrypoint-initdb.d/setup.sql
-#     directories:
-#       - data:/var/lib/mysql
-#   redis:
-#     image: valkey/valkey:8
-#     host: 192.168.0.2
-#     port: 6379
-#     directories:
-#       - data:/data
+accessories:
+  db:
+    image: postgres:17
+    host: 203.0.113.10 # MISMA IP que servers.web — un solo droplet, mantener los 3 lugares (servers.web, accessories.db.host, accessories.whatsapp.host) sincronizados
+    port: "127.0.0.1:5432:5432" # solo loopback del host — nunca expuesto a internet
+    env:
+      clear:
+        POSTGRES_USER: retroai
+        POSTGRES_DB: retroai_production
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql/data
+  whatsapp:
+    image: ghcr.io/tamasi/paddleroster-whatsapp
+    host: 203.0.113.10 # MISMA IP que servers.web y accessories.db — un solo droplet
+    env:
+      clear:
+        PORT: "3001"
+      secret:
+        # whatsapp-service/src/db.ts lee process.env.DATABASE_URL — alias para que el
+        # contenedor reciba DATABASE_URL, leyendo el valor del secreto WHATSAPP_DATABASE_URL.
+        - DATABASE_URL:WHATSAPP_DATABASE_URL
