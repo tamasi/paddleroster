@@ -6,6 +6,14 @@ class CalendarioTest < ApplicationSystemTestCase
     @cancha = canchas(:one)
 
     visit new_session_path
+    # Esperar a que el form esté realmente listo antes de llenarlo: en
+    # logins subsecuentes dentro del mismo browser de Capybara (2do+ test
+    # del archivo), `visit` puede devolver el control antes de que el
+    # campo esté listo para recibir input, y `fill_in "password"` queda
+    # en blanco sin levantar error — el submit nativo lo bloquea por
+    # `required` y nunca llega ningún POST al servidor. `assert_selector`
+    # sí hace polling real hasta que el campo exista.
+    assert_selector "input#email_address"
     fill_in "email_address", with: @user.email_address
     fill_in "password", with: "password"
     click_on "Ingresar"

@@ -3,6 +3,11 @@ require_relative "application_system_test_case"
 class DarkModeTest < ApplicationSystemTestCase
   setup do
     visit new_session_path
+    # Ver comentario en calendario_test.rb: sin este wait explícito, un
+    # login posterior al primero del archivo puede correr fill_in/click_on
+    # contra un form todavía no listo, dejando "password" en blanco sin
+    # error visible (el submit queda bloqueado por `required` nativo).
+    assert_selector "input#email_address"
     fill_in "email_address", with: users(:one).email_address
     fill_in "password", with: "password"
     click_on "Ingresar"
