@@ -76,7 +76,7 @@ development_status:
   5-4-reemplazo-auto-gestionado-de-suplentes-fr-3: done
   epic-5-retrospective: optional
 
-  epic-6: in-progress
+  epic-6: done
   6-1-pipeline-de-ci-cd-build-y-push-de-imagenes: done
   6-2-configuracion-real-de-despliegue-kamal: done
   6-3-rate-limiting-en-el-login-rack-attack: done
