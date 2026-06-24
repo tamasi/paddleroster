@@ -25,6 +25,9 @@ gem "view_component"
 # Authorization policies (RBAC) [https://github.com/varvet/pundit]
 gem "pundit"
 
+# Rate limiting / throttling para proteger el login de fuerza bruta [https://github.com/rack/rack-attack]
+gem "rack-attack", "~> 6.8"
+
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
